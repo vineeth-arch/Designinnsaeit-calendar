@@ -21,6 +21,7 @@ import {
   useIsBackgroundTransparent,
   useIsEmbed,
 } from "@calcom/embed-core/embed-iframe";
+import { ThemeToggle } from "@calcom/features/components/ThemeToggle";
 import { Price } from "@calcom/features/bookings/components/event-meta/Price";
 import { getCalendarLinks, CalendarLinkType } from "@calcom/features/bookings/lib/getCalendarLinks";
 import { RATING_OPTIONS, validateRating } from "@calcom/features/bookings/lib/rating";
@@ -469,6 +470,14 @@ export default function Success(props: PageProps) {
   return (
     <div className={isEmbed ? "" : "h-screen"} data-testid="success-page">
       {!isEmbed && !isFeedbackMode && (
+        <div className="fixed right-4 top-4 z-50">
+          <ThemeToggle
+            size="lg"
+            className="border-subtle bg-default/80 rounded-full border shadow-sm backdrop-blur [&_svg]:h-5 [&_svg]:w-5"
+          />
+        </div>
+      )}
+      {!isEmbed && !isFeedbackMode && (
         <EventReservationSchema
           reservationId={bookingInfo.uid}
           eventName={eventName}
@@ -538,8 +547,10 @@ export default function Success(props: PageProps) {
                   <>
                     {showTicketStub ? (
                       <div
-                        className="bg-emphasis text-emphasis relative mb-6 aspect-[509/354] w-full"
+                        className="text-emphasis relative mb-6 aspect-[509/354] w-full"
                         style={{
+                          // Near-white paper in light, lifted indigo in dark — a clearly elevated stamp.
+                          background: "var(--cal-stamp)",
                           WebkitMaskImage: "url(/ticket-stamp.svg)",
                           maskImage: "url(/ticket-stamp.svg)",
                           WebkitMaskSize: "100% 100%",
@@ -549,7 +560,7 @@ export default function Success(props: PageProps) {
                           // Elevated stamp: a directional 135° (down-right) cast + a soft ambient blur,
                           // both following the scalloped mask so it lifts off the page in either mode.
                           filter:
-                            "drop-shadow(14px 14px 18px rgba(0,0,0,0.32)) drop-shadow(0 6px 16px rgba(0,0,0,0.18))",
+                            "drop-shadow(16px 16px 22px rgba(0,0,0,0.30)) drop-shadow(0 4px 12px rgba(0,0,0,0.16))",
                         }}>
                         <div className="absolute inset-0 flex flex-col justify-between p-[6%]">
                           {/* Notched accent header block: label · event name + date */}
@@ -592,7 +603,7 @@ export default function Success(props: PageProps) {
                             <div className="h-24 w-24 shrink-0 sm:h-28 sm:w-28">
                               <BookingQRCode
                                 value={`${WEBAPP_URL}/booking/${bookingInfo.uid}`}
-                                centerBg="var(--cal-bg-emphasis)"
+                                centerBg="var(--cal-stamp)"
                               />
                             </div>
                           </div>

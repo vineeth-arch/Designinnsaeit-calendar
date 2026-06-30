@@ -244,6 +244,8 @@
   --cal-bg: #EDEAE2;
   --cal-bg-subtle: #E4E0D6;
   --cal-bg-muted: #EAE6DD;
+  /* Lifted "paper" surface for the booking ticket stub — near-white in light, deep indigo in dark. */
+  --cal-stamp: #FBF9F3;
   --cal-bg-inverted: #161310;
 
   /* Background Primary */
@@ -374,6 +376,7 @@
   --cal-bg: #1F006E;
   --cal-bg-subtle: #1A0552;
   --cal-bg-muted: #190550;
+  --cal-stamp: #280A86;
   --cal-bg-inverted: #EFE6EA;
 
   /* Background Primary */
