@@ -546,7 +546,10 @@ export default function Success(props: PageProps) {
                           maskSize: "100% 100%",
                           WebkitMaskRepeat: "no-repeat",
                           maskRepeat: "no-repeat",
-                          filter: "drop-shadow(0 18px 40px rgba(0,0,0,0.28))",
+                          // Elevated stamp: a directional 135° (down-right) cast + a soft ambient blur,
+                          // both following the scalloped mask so it lifts off the page in either mode.
+                          filter:
+                            "drop-shadow(14px 14px 18px rgba(0,0,0,0.32)) drop-shadow(0 6px 16px rgba(0,0,0,0.18))",
                         }}>
                         <div className="absolute inset-0 flex flex-col justify-between p-[6%]">
                           {/* Notched accent header block: label · event name + date */}
