@@ -15,11 +15,11 @@ type EventProps = {
 };
 
 const eventClasses = cva(
-  "group flex h-full w-full overflow-hidden rounded-[6px] px-[6px] text-xs leading-5 border-default font-medium",
+  "group flex h-full w-full overflow-hidden rounded-md px-2 text-xs leading-5 border-default font-semibold",
   {
     variants: {
       status: {
-        ACCEPTED: "bg-subtle hover:bg-emphasis text-emphasis border-[1px] border-default",
+        ACCEPTED: "bg-emphasis hover:bg-emphasis text-emphasis border-[1px] border-default",
         PENDING: "bg-subtle text-subtle border-[1px] border-dashed border-default",
         REJECTED: "bg-subtle border-[1px] border-dashed text-subtle line-through",
         CANCELLED: "bg-subtle border-[1px] border-dashed text-subtle line-through",

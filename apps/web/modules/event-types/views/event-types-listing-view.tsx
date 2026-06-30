@@ -190,7 +190,7 @@ const Item = ({
   const content = (): JSX.Element => (
     <div>
       <span
-        className="break-words font-semibold text-default ltr:mr-1 rtl:ml-1"
+        className="break-words font-cal text-base font-bold -tracking-[0.01em] text-emphasis ltr:mr-1 rtl:ml-1"
         data-testid={`event-type-title-${type.id}`}>
         {type.title}
       </span>
