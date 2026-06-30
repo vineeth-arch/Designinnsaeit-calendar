@@ -138,18 +138,18 @@ export const getBookerSizeClassNames = (
   return [
     // Size settings are abstracted on their own lines purely for readability.
     // General sizes, used always
-    "[--booker-timeslots-width:240px] lg:[--booker-timeslots-width:280px]",
+    "[--booker-timeslots-width:280px] lg:[--booker-timeslots-width:340px]",
     // Small calendar defaults
-    layout === BookerLayouts.MONTH_VIEW && getBookerMetaClass("[--booker-meta-width:240px]"),
+    layout === BookerLayouts.MONTH_VIEW && getBookerMetaClass("[--booker-meta-width:300px]"),
     // Meta column gets wider in booking view to fit the full date on a single row in case
     // of a multi occurrence event. Also makes form less wide, which also looks better.
     layout === BookerLayouts.MONTH_VIEW &&
       bookerState === "booking" &&
-      `[--booker-main-width:420px] ${getBookerMetaClass("lg:[--booker-meta-width:340px]")}`,
-    // Smaller meta when not in booking view.
+      `[--booker-main-width:460px] ${getBookerMetaClass("lg:[--booker-meta-width:380px]")}`,
+    // Roomier calendar + meta when not in booking view (the public landing state).
     layout === BookerLayouts.MONTH_VIEW &&
       bookerState !== "booking" &&
-      `[--booker-main-width:480px] ${getBookerMetaClass("lg:[--booker-meta-width:280px]")}`,
+      `[--booker-main-width:540px] lg:[--booker-main-width:620px] ${getBookerMetaClass("lg:[--booker-meta-width:360px]")}`,
     // Fullscreen view settings.
     layout !== BookerLayouts.MONTH_VIEW &&
       `[--booker-main-width:480px] [--booker-meta-width:340px] ${getBookerMetaClass(
