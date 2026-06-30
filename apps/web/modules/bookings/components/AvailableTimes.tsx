@@ -181,18 +181,21 @@ const SlotItem = ({
             "after:bg-brand-default after:absolute after:-left-9 after:right-0 after:top-1/2 after:h-[2.5px] after:origin-center after:-translate-y-1/2 after:scale-x-0 after:opacity-0 after:transition-[transform,opacity] after:duration-300 after:ease-out after:content-['']",
             isSelected
               ? // Chosen slot: accent square marker + accent line slicing the rail (numeral scaled below).
-                "text-brand-default before:bg-brand-default before:h-2.5 before:w-4 after:scale-x-100 after:opacity-50"
+                "text-brand-default before:bg-brand-default before:h-2.5 before:w-[18px] after:scale-x-100 after:opacity-[0.55]"
               : "",
             // Same blow-up, animated, on hover for available slots.
             canHoverExpand &&
-              "hover:text-brand-default hover:before:h-2.5 hover:before:w-4 hover:before:bg-brand-default hover:after:scale-x-100 hover:after:opacity-50",
+              "hover:text-brand-default hover:before:h-2.5 hover:before:w-[18px] hover:before:bg-brand-default hover:after:scale-x-100 hover:after:opacity-[0.55]",
             `${customClassNames}`
           )}>
           <span
             className={classNames(
               "bg-default dark:bg-cal-muted font-cal relative z-10 flex origin-left items-center gap-2 whitespace-nowrap pr-3 text-xl font-extrabold leading-none -tracking-[0.02em] transition-transform duration-300 ease-out will-change-transform motion-reduce:transition-none",
-              isSelected && "scale-[2]",
-              canHoverExpand && "group-hover:scale-[2]",
+              // Explicit colours so the slot number reads ink when idle and accent on hover/selected
+              // (the minimal button's hover:text-emphasis would otherwise force it back to ink).
+              !isSelected && "text-emphasis",
+              isSelected && "text-brand-default scale-[2]",
+              canHoverExpand && "group-hover:text-brand-default group-hover:scale-[2]",
               isTimeslotUnavailable && !isSelected && "text-subtle line-through opacity-60"
             )}>
             {!hasTimeSlots && overlayCalendarToggled && (
