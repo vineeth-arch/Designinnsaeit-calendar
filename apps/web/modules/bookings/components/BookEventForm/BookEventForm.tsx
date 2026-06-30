@@ -3,7 +3,7 @@ import { useIsPlatformBookerEmbed } from "@calcom/atoms/hooks/useIsPlatformBooke
 import { useBookerStoreContext } from "@calcom/features/bookings/Booker/BookerStoreProvider";
 import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerTime";
 import type { UseBookingFormReturnType } from "@calcom/features/bookings/Booker/hooks/useBookingForm";
-import { formatEventFromTime } from "@calcom/features/bookings/Booker/utils/dates";
+import { FromToTime, formatEventFromTime } from "@calcom/features/bookings/Booker/utils/dates";
 import type { BookerEvent } from "@calcom/features/bookings/types";
 import ServerTrans from "@calcom/lib/components/ServerTrans";
 import { APP_NAME, WEBSITE_PRIVACY_POLICY_URL, WEBSITE_TERMS_URL } from "@calcom/lib/constants";
@@ -72,6 +72,7 @@ export const BookEventForm = ({
   const bookingData = useBookerStoreContext((state) => state.bookingData);
   const rescheduleUid = useBookerStoreContext((state) => state.rescheduleUid);
   const username = useBookerStoreContext((state) => state.username);
+  const selectedDuration = useBookerStoreContext((state) => state.selectedDuration);
   const isPlatformBookerEmbed = useIsPlatformBookerEmbed();
   const { timeFormat, timezone } = useBookerTime();
 
@@ -123,23 +124,40 @@ export const BookEventForm = ({
         form={bookingForm}
         handleSubmit={onSubmit}
         noValidate>
-        <div className="mb-5">
+        <div className="mb-4">
           <p className="text-brand-default text-[11px] font-bold uppercase tracking-[0.18em]">
             {t("almost_there")}
           </p>
           <h2 className="text-emphasis font-cal mt-1 text-2xl font-extrabold leading-none -tracking-[0.02em]">
             {t("confirm_your_details")}
           </h2>
+          <p className="text-subtle mt-2 text-sm">{t("booking_form_subtitle")}</p>
         </div>
-        <BookingFields
-          isDynamicGroupBooking={!!(username && username.indexOf("+") > -1)}
-          fields={eventType.bookingFields}
-          locations={eventType.locations}
-          rescheduleUid={rescheduleUid || undefined}
-          bookingData={bookingData}
-          isPaidEvent={isPaidEvent}
-          paymentCurrency={paymentCurrency}
-        />
+        {timeslot && (
+          <div className="bg-brand-default/10 border-subtle mb-5 flex items-center gap-3 rounded-xl border px-4 py-3">
+            <span className="bg-brand-default h-2.5 w-2.5 shrink-0 rounded-full" aria-hidden />
+            <span className="text-emphasis text-sm font-semibold">
+              <FromToTime
+                date={timeslot}
+                duration={selectedDuration ?? null}
+                timeFormat={timeFormat}
+                timeZone={timezone}
+                language={i18n.language}
+              />
+            </span>
+          </div>
+        )}
+        <div className="[&_label]:text-subtle [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.08em]">
+          <BookingFields
+            isDynamicGroupBooking={!!(username && username.indexOf("+") > -1)}
+            fields={eventType.bookingFields}
+            locations={eventType.locations}
+            rescheduleUid={rescheduleUid || undefined}
+            bookingData={bookingData}
+            isPaidEvent={isPaidEvent}
+            paymentCurrency={paymentCurrency}
+          />
+        </div>
         {errors.hasFormErrors || errors.hasDataErrors ? (
           <div data-testid="booking-fail">
             <Alert
