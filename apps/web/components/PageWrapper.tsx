@@ -10,8 +10,7 @@
 "use client";
 
 import { DefaultSeo } from "next-seo";
-import { Inter } from "next/font/google";
-import localFont from "next/font/local";
+import { Bricolage_Grotesque, Hanken_Grotesk } from "next/font/google";
 import Head from "next/head";
 import Script from "next/script";
 
@@ -32,13 +31,19 @@ export interface CalPageWrapper {
   PageWrapper?: AppProps["Component"]["PageWrapper"];
 }
 
-const interFont = Inter({ subsets: ["latin"], variable: "--font-sans", preload: true, display: "swap" });
-const calFont = localFont({
-  src: "../fonts/CalSans-SemiBold.woff2",
-  variable: "--font-cal",
+const hankenFont = Hanken_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  weight: ["300", "400", "500", "600", "700", "800"],
   preload: true,
   display: "swap",
-  weight: "600",
+});
+const bricolageFont = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-cal",
+  weight: ["600", "700", "800"],
+  preload: true,
+  display: "swap",
 });
 
 function PageWrapper(props: AppProps) {
@@ -89,8 +94,8 @@ function PageWrapper(props: AppProps) {
 
       <style jsx global>{`
         :root {
-          --font-sans: ${interFont.style.fontFamily}, system-ui;
-          --font-cal: ${calFont.style.fontFamily};
+          --font-sans: ${hankenFont.style.fontFamily}, system-ui;
+          --font-cal: ${bricolageFont.style.fontFamily};
         }
       `}</style>
       <IconSprites />

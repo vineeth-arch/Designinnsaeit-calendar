@@ -51,6 +51,7 @@
   --color-brand-muted: var(--cal-brand-muted);
   --color-brand-subtle: var(--cal-brand-subtle, #9CA3AF);
   --color-brand-accent: var(--cal-brand-accent, white);
+  --color-spark: var(--cal-spark, #FF006C);
   --color-semantic-info-subtle: var(--cal-bg-semantic-info-subtle);
   --color-semantic-info-emphasis: var(--cal-bg-semantic-info-emphasis);
   --color-semantic-success-subtle: var(--cal-bg-semantic-success-subtle);
@@ -238,22 +239,22 @@
 
   --radius-none: 0px;
 
-  /* Background Standard */
-  --cal-bg-emphasis: hsla(220, 13%, 91%, 1);
-  --cal-bg: hsla(0, 0%, 100%, 1);
-  --cal-bg-subtle: hsla(220, 14%, 94%, 1);
-  --cal-bg-muted: hsla(210, 20%, 97%, 1);
-  --cal-bg-inverted: hsla(210, 30%, 4%, 1);
+  /* Background Standard — Braun/Rams warm neutral */
+  --cal-bg-emphasis: #D6D1C5;
+  --cal-bg: #EDEAE2;
+  --cal-bg-subtle: #E4E0D6;
+  --cal-bg-muted: #EAE6DD;
+  --cal-bg-inverted: #161310;
 
   /* Background Primary */
-  --cal-bg-primary: hsla(214, 30%, 16%, 1);
-  --cal-bg-primary-emphasis: hsla(220, 6%, 25%, 1);
-  --cal-bg-primary-muted: hsla(220, 14%, 94%, 1);
+  --cal-bg-primary: #161310;
+  --cal-bg-primary-emphasis: #2E2A24;
+  --cal-bg-primary-muted: #E4E0D6;
 
   /* Background Brand */
-  --cal-bg-brand: hsla(214, 30%, 16%, 1);
-  --cal-bg-brand-emphasis: hsla(220, 6%, 25%, 1);
-  --cal-bg-brand-muted: hsla(220, 14%, 94%, 1);
+  --cal-bg-brand: #161310;
+  --cal-bg-brand-emphasis: #2E2A24;
+  --cal-bg-brand-muted: #E4E0D6;
 
   /* Background Semantic */
   --cal-bg-semantic-info-subtle: hsla(212, 88%, 97%, 1);
@@ -290,10 +291,10 @@
   --cal-bg-launch-dark: hsla(242, 53%, 10%, 1);
 
   /* Borders */
-  --cal-border-emphasis: hsla(218, 11%, 65%, 1);
-  --cal-border: hsla(216, 12%, 84%, 1);
-  --cal-border-subtle: hsla(220, 13%, 91%, 1);
-  --cal-border-muted: hsla(220, 14%, 94%, 1);
+  --cal-border-emphasis: #9C988D;
+  --cal-border: #D2CCBE;
+  --cal-border-subtle: #DED8CC;
+  --cal-border-muted: #E4E0D6;
   --cal-border-error: hsla(0, 96%, 89%, 1);
   --cal-border-semantic-error: hsla(0, 96%, 89%, 1);
   --cal-border-semantic-attention-subtle: hsla(32, 98%, 83%, 1);
@@ -301,11 +302,11 @@
   --cal-border-booker: var(--cal-border-subtle);
 
   /* Content/Text Standard */
-  --cal-text-emphasis: hsla(210, 30%, 4%, 1);
-  --cal-text: hsla(220, 6%, 25%, 1);
-  --cal-text-subtle: hsla(220, 9%, 46%, 1);
-  --cal-text-muted: hsla(218, 11%, 65%, 1);
-  --cal-text-inverted: hsla(0, 0%, 100%, 1);
+  --cal-text-emphasis: #161310;
+  --cal-text: #524E47;
+  --cal-text-subtle: #6E6A61;
+  --cal-text-muted: #9C988D;
+  --cal-text-inverted: #EDEAE2;
 
   /* Content/Text Semantic */
   --cal-text-semantic-info: hsla(236, 80%, 25%, 1);
@@ -328,10 +329,11 @@
   --cal-text-attention: hsla(16, 62%, 28%, 1);
   --cal-text-error: hsla(0, 63%, 31%, 1);
 
-  /* Brand */
-  --cal-brand: hsla(221, 39%, 11%, 1);
-  --cal-brand-emphasis: hsla(0, 0%, 6%, 1);
-  --cal-brand-text: hsla(0, 0%, 100%, 1);
+  /* Brand — pink accent (Braun/Rams functional accent) */
+  --cal-brand: #FF006C;
+  --cal-brand-emphasis: #D60059;
+  --cal-brand-text: #FFFFFF;
+  --cal-spark: #FF006C;
 
   /* Box Shadows */
   --shadow-dropdown: 0px 5px 20px 0px rgba(0, 0, 0, 0.10), 0px 10px 40px 0px rgba(0, 0, 0, 0.03);
@@ -367,22 +369,22 @@
 }
 
 .dark {
-  /* Background Standard */
-  --cal-bg-emphasis: hsla(0, 0%, 25%, 1);
-  --cal-bg: hsla(0, 0%, 6%, 1);
-  --cal-bg-subtle: hsla(0, 0%, 15%, 1);
-  --cal-bg-muted: hsla(0, 0%, 9%, 1);
-  --cal-bg-inverted: hsla(0, 0%, 98%, 1);
+  /* Background Standard — Design Innsæit electric indigo */
+  --cal-bg-emphasis: #3A14BE;
+  --cal-bg: #1F006E;
+  --cal-bg-subtle: #1A0552;
+  --cal-bg-muted: #190550;
+  --cal-bg-inverted: #EFE6EA;
 
   /* Background Primary */
-  --cal-bg-primary: hsla(0, 0%, 96%, 1);
-  --cal-bg-primary-emphasis: hsla(0, 0%, 64%, 1);
-  --cal-bg-primary-muted: hsla(0, 0%, 15%, 1);
+  --cal-bg-primary: #EFE6EA;
+  --cal-bg-primary-emphasis: #CFC4F0;
+  --cal-bg-primary-muted: #1A0552;
 
   /* Background Brand */
-  --cal-bg-brand: hsla(0, 0%, 98%, 1);
-  --cal-bg-brand-emphasis: hsla(0, 0%, 96%, 1);
-  --cal-bg-brand-muted: hsla(0, 0%, 96%, 1);
+  --cal-bg-brand: #EFE6EA;
+  --cal-bg-brand-emphasis: #CFC4F0;
+  --cal-bg-brand-muted: #1A0552;
 
   /* Background Semantic */
   --cal-bg-semantic-info-subtle: hsla(236, 80%, 8%, 1);
@@ -419,10 +421,10 @@
   --cal-bg-launch-dark: hsla(242, 53%, 10%, 1);
 
   /* Border Standard */
-  --cal-border: hsla(0, 0%, 30%, 1);
-  --cal-border-muted: hsla(0, 0%, 9%, 1);
-  --cal-border-subtle: hsla(0, 0%, 15%, 1);
-  --cal-border-emphasis: hsla(0, 0%, 45%, 1);
+  --cal-border: #36207A;
+  --cal-border-muted: #190550;
+  --cal-border-subtle: #2A1466;
+  --cal-border-emphasis: #523399;
   --cal-border-semantic-error: hsla(0, 63%, 24%, 1);
   --cal-border-semantic-attention-subtle: hsla(15, 75%, 23%, 1);
   --cal-border-semantic-error-subtle: hsla(0, 63%, 24%, 1);
@@ -430,11 +432,11 @@
   --cal-border-booker: var(--cal-border-subtle);
 
   /* Content/Text Standard */
-  --cal-text-emphasis: hsla(0, 0%, 98%, 1);
-  --cal-text: hsla(0, 0%, 83%, 1);
-  --cal-text-subtle: hsla(0, 0%, 64%, 1);
-  --cal-text-muted: hsla(0, 0%, 64%, 1);
-  --cal-text-inverted: hsla(0, 0%, 0%, 1);
+  --cal-text-emphasis: #FFFFFF;
+  --cal-text: #E2D8F5;
+  --cal-text-subtle: #9B8FC9;
+  --cal-text-muted: #7E70B0;
+  --cal-text-inverted: #11003B;
 
   /* Content/Text Semantic */
   --cal-text-semantic-info: hsla(229, 90%, 74%, 1);
@@ -452,10 +454,11 @@
   --cal-text-attention: hsla(37, 86%, 92%, 1);
   --cal-text-error: hsla(3, 66%, 93%, 1);
 
-  /* Brand */
-  --cal-brand: hsla(0, 0%, 100%, 1);
-  --cal-brand-emphasis: hsla(218, 11%, 65%, 1);
-  --cal-brand-text: hsla(0, 0%, 0%, 1);
+  /* Brand — teal accent (Design Innsæit electric) */
+  --cal-brand: #00FFCF;
+  --cal-brand-emphasis: #00C9A3;
+  --cal-brand-text: #11003B;
+  --cal-spark: #FF006C;
 
   /* Fill Colors */
   --fill-emphasis: var(--cal-text-emphasis);

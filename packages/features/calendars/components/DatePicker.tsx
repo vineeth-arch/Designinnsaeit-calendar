@@ -79,21 +79,24 @@ const Day = ({
   const enabledDateButtonEmbedStyles = useEmbedStyles("enabledDateButton");
   const disabledDateButtonEmbedStyles = useEmbedStyles("disabledDateButton");
 
+  const isToday = date.isToday();
+  // Dot-grid calendar: each day is a circle. Availability is read as fill —
+  // selected = the one accent drop, today = accent ring, open = solid dot, closed = hollow ring.
   const buttonContent = (
     <button
       type="button"
       style={disabled ? { ...disabledDateButtonEmbedStyles } : { ...enabledDateButtonEmbedStyles }}
       className={classNames(
-        "disabled:text-bookinglighter absolute bottom-0 left-0 right-0 top-0 mx-auto w-full cursor-pointer rounded-md border-2 border-transparent text-center text-sm font-medium transition disabled:cursor-default disabled:border-transparent disabled:font-light ",
+        "absolute inset-0 mx-auto flex aspect-square w-full cursor-pointer items-center justify-center rounded-full border-2 text-center text-[13px] font-semibold transition disabled:cursor-default disabled:font-light",
         active
-          ? "bg-brand-default text-brand"
-          : !disabled
-            ? `${
-                !customClassName?.dayActive
-                  ? "hover:border-brand-default text-emphasis bg-emphasis"
-                  : `hover:border-brand-default ${customClassName.dayActive}`
-              }`
-            : `${customClassName ? "" : " text-mute"}`
+          ? "bg-brand-default text-brand border-brand-default"
+          : isToday
+            ? "bg-inverted text-inverted border-brand-default"
+            : !disabled
+              ? !customClassName?.dayActive
+                ? "bg-inverted text-inverted border-transparent hover:border-brand-default"
+                : `border-transparent hover:border-brand-default ${customClassName.dayActive}`
+              : "border-subtle text-muted"
       )}
       data-testid="day"
       data-disabled={disabled}
@@ -101,15 +104,7 @@ const Day = ({
       {...props}>
       {away && <span data-testid="away-emoji">{emoji}</span>}
       {!away && date.date()}
-      {date.isToday() && (
-        <span
-          className={classNames(
-            "bg-brand-default absolute left-1/2 top-1/2 flex h-[5px] w-[5px] -translate-x-1/2 translate-y-[8px] items-center justify-center rounded-full align-middle sm:translate-y-[12px]",
-            active && "bg-brand-accent"
-          )}>
-          <span className="sr-only">{t("today")}</span>
-        </span>
-      )}
+      {isToday && <span className="sr-only">{t("today")}</span>}
     </button>
   );
 
@@ -419,10 +414,14 @@ const DatePicker = ({
           {browsingDate ? (
             <time dateTime={browsingDate.format("YYYY-MM")} data-testid="selected-month-label">
               <strong
-                className={classNames(`text-emphasis font-semibold`, customClassNames?.datePickerTitle)}>
+                className={classNames(
+                  `font-cal text-emphasis text-2xl font-extrabold tracking-tight`,
+                  customClassNames?.datePickerTitle
+                )}>
                 {month}
               </strong>{" "}
-              <span className={classNames(`text-subtle font-medium`, customClassNames?.datePickerTitle)}>
+              <span
+                className={classNames(`text-subtle text-base font-medium`, customClassNames?.datePickerTitle)}>
                 {browsingDate.format("YYYY")}
               </span>
             </time>
@@ -474,7 +473,7 @@ const DatePicker = ({
           </div>
         ))}
       </div>
-      <div className="relative grid grid-cols-7 grid-rows-6 gap-1 text-center">
+      <div className="relative grid grid-cols-7 grid-rows-6 gap-1.5 text-center">
         <Days
           customClassName={{
             datePickerDate: customClassNames?.datePickersDates,
