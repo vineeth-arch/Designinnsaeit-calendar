@@ -30,46 +30,60 @@ export const AvailableTimesHeader = ({
   const { t, i18n } = useLocale();
   const [layout] = useBookerStoreContext((state) => [state.layout], shallow);
   const isColumnView = layout === BookerLayouts.COLUMN_VIEW;
-  const isMonthView = layout === BookerLayouts.MONTH_VIEW;
   const isToday = dayjs().isSame(date, "day");
 
+  // Column view keeps the compact, centered per-day label (multiple days sit side by side).
+  if (isColumnView) {
+    return (
+      <header
+        className={classNames(
+          `dark:bg-cal-muted dark:before:bg-cal-muted mb-3 flex w-full flex-row items-center font-medium`,
+          "bg-default before:bg-default",
+          customClassNames?.availableTimeSlotsHeaderContainer
+        )}>
+        <span className="text-subtle w-full text-center text-xs uppercase">
+          <span
+            className={classNames(
+              isToday && !customClassNames?.availableTimeSlotsTitle && "!text-default",
+              customClassNames?.availableTimeSlotsTitle
+            )}>
+            {nameOfDay(i18n.language, Number(date.format("d")), "short")}
+          </span>
+          <span
+            className={classNames(
+              isToday && "bg-brand-default text-brand ml-2",
+              "inline-flex items-center justify-center rounded-3xl px-1 pt-0.5 text-xs font-medium",
+              customClassNames?.availableTimeSlotsTitle
+            )}>
+            {date.format("DD")}
+            {availableMonth && `, ${availableMonth}`}
+          </span>
+        </span>
+      </header>
+    );
+  }
+
+  // Month view (the public Booker): the Braun "systems" ruler head — "Wed 12" + "Feb · 12h".
   return (
     <header
       className={classNames(
-        `dark:bg-cal-muted dark:before:bg-cal-muted mb-3 flex w-full flex-row items-center font-medium`,
+        `dark:bg-cal-muted dark:before:bg-cal-muted mb-1.5 flex w-full flex-row items-baseline justify-between`,
         "bg-default before:bg-default",
         customClassNames?.availableTimeSlotsHeaderContainer
       )}>
       <span
         className={classNames(
-          isColumnView && "w-full text-center",
-          isColumnView ? "text-subtle text-xs uppercase" : "text-emphasis font-semibold"
+          "text-emphasis font-cal text-3xl font-extrabold leading-none -tracking-[0.02em]",
+          customClassNames?.availableTimeSlotsTitle
         )}>
-        <span
-          className={classNames(
-            isToday && !customClassNames?.availableTimeSlotsTitle && "!text-default",
-            customClassNames?.availableTimeSlotsTitle
-          )}>
-          {nameOfDay(i18n.language, Number(date.format("d")), "short")}
-        </span>
-        <span
-          className={classNames(
-            isColumnView && isToday && "bg-brand-default text-brand ml-2",
-            "inline-flex items-center justify-center rounded-3xl px-1 pt-0.5 font-medium",
-            isMonthView
-              ? `text-default text-sm ${customClassNames?.availableTimeSlotsTitle}`
-              : `text-xs ${customClassNames?.availableTimeSlotsTitle}`
-          )}>
-          {date.format("DD")}
-          {availableMonth && `, ${availableMonth}`}
-        </span>
+        {nameOfDay(i18n.language, Number(date.format("d")), "short")} {date.format("D")}
       </span>
-
-      {showTimeFormatToggle && (
-        <div className="ml-auto rtl:mr-auto">
+      <span className="text-subtle flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]">
+        {availableMonth ?? date.format("MMM")} ·
+        {showTimeFormatToggle && (
           <TimeFormatToggle customClassName={customClassNames?.availableTimeSlotsTimeFormatToggle} />
-        </div>
-      )}
+        )}
+      </span>
     </header>
   );
 };

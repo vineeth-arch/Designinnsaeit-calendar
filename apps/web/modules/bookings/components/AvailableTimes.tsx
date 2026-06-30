@@ -166,19 +166,23 @@ const SlotItem = ({
           data-disabled={bookingFull}
           data-time={slot.time}
           onClick={onButtonClick}
+          color="minimal"
           className={classNames(
-            `hover:border-brand-default mb-2.5 flex h-auto w-full grow flex-col justify-center py-3 text-base font-semibold`,
-            // Selected slot "blows up" on the rail: taller, accent, with a thick accent marker on the rail.
+            // The slot is a flat "tick" on the Braun rail: time on the left, meta on the right.
+            "relative mb-1 flex h-auto w-full grow flex-row items-center justify-between gap-2 rounded-none px-0 py-2 text-left",
+            // Tick mark on the rail (the wrapper supplies the rail via its left border + pl-4).
+            "before:bg-default before:absolute before:-left-4 before:top-1/2 before:h-0.5 before:w-3 before:-translate-y-1/2 before:content-['']",
             isSelected
-              ? "border-brand-default text-brand-default -ml-4 min-h-16 rounded-l-none border-l-4 pl-4"
-              : "min-h-12",
+              ? // Selected "blows up": tall, accent numeral, accent square marker + accent line slicing the rail.
+                "text-brand-default before:bg-brand-default min-h-[5.25rem] before:h-2.5 before:w-4 after:bg-brand-default after:absolute after:inset-x-0 after:top-1/2 after:h-[2.5px] after:-translate-y-1/2 after:opacity-50 after:content-['']"
+              : "hover:text-brand-default min-h-12",
             `${customClassNames}`
-          )}
-          color="secondary">
-          <div
+          )}>
+          <span
             className={classNames(
-              "flex items-center gap-2",
-              isSelected && "font-cal text-2xl leading-none -tracking-[0.02em]"
+              "bg-default dark:bg-cal-muted font-cal relative z-10 flex items-center gap-2 pr-3 leading-none -tracking-[0.02em]",
+              isSelected ? "text-[2.5rem] font-extrabold" : "text-lg",
+              isTimeslotUnavailable && !isSelected && "text-subtle line-through opacity-60"
             )}>
             {!hasTimeSlots && overlayCalendarToggled && (
               <span
@@ -189,10 +193,9 @@ const SlotItem = ({
               />
             )}
             {computedDateWithUsersTimezone.format(timeFormat)}
-          </div>
-          {bookingFull && <p className="text-sm">{t("booking_full")}</p>}
-          {hasTimeSlots && !bookingFull && (
-            <p className="flex items-center text-sm">
+          </span>
+          {hasTimeSlots && !bookingFull ? (
+            <span className="bg-default dark:bg-cal-muted relative z-10 flex items-center pl-2 text-sm">
               <span
                 className={classNames(colorClass, "mr-1 inline-block h-2 w-2 rounded-full")}
                 aria-hidden
@@ -202,7 +205,19 @@ const SlotItem = ({
                 totalSeats={seatsPerTimeSlot}
                 bookedSeats={slot.attendees || 0}
               />
-            </p>
+            </span>
+          ) : (
+            <span
+              className={classNames(
+                "bg-default dark:bg-cal-muted relative z-10 pl-2 text-[10px] font-semibold uppercase tracking-[0.12em]",
+                isSelected ? "text-brand-default font-bold" : "text-subtle"
+              )}>
+              {isSelected
+                ? t("selected")
+                : bookingFull || isTimeslotUnavailable
+                  ? t("full")
+                  : `${eventData?.length ?? ""}m`}
+            </span>
           )}
         </Button>
         {!!slot.showConfirmButton && (
@@ -295,13 +310,18 @@ export const AvailableTimes = ({
         )}
         {oooBeforeSlots && !oooAfterSlots && <OOOSlot {...slots[0]} />}
         {slots.some((slot) => !slot.away) && (
-          // Braun "systems" rail: a hairline timeline down the left of the slot stack.
-          <div className="border-subtle relative ml-1 border-l pl-4">
-            {slots.map((slot) => {
-              if (slot.away) return null;
-              return <SlotItem key={slot.time} slot={slot} {...props} />;
-            })}
-          </div>
+          <>
+            <div className="text-subtle border-subtle mb-1.5 border-b pb-2.5 text-[10px] font-semibold uppercase tracking-[0.16em]">
+              {t("systems_open_slots", { count: slots.filter((slot) => !slot.away).length })}
+            </div>
+            {/* Braun "systems" rail: a visible timeline down the left of the slot stack. */}
+            <div className="border-default relative ml-1 border-l-2 pl-4">
+              {slots.map((slot) => {
+                if (slot.away) return null;
+                return <SlotItem key={slot.time} slot={slot} {...props} />;
+              })}
+            </div>
+          </>
         )}
         {oooAfterSlots && !oooBeforeSlots && <OOOSlot {...slots[slots.length - 1]} className="pb-0" />}
       </div>

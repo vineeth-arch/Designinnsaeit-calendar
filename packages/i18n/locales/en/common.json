@@ -1,4 +1,8 @@
 {
+  "book_a_session": "Book a session",
+  "systems_open_slots": "Systems · {{count}} open",
+  "selected": "Selected",
+  "full": "Full",
   "apply_to_all": "Apply to all",
   "identity_provider": "Identity provider",
   "trial_days_left": "You have $t(day, {\"count\": {{days}} }) left on your pro trial",
