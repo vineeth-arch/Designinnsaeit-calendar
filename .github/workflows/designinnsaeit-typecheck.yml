@@ -1,0 +1,31 @@
+# Runs type-check on every direct push to main / claude/** so build errors are
+# visible in the Actions tab (the repo's check-types.yml only runs on pull_request,
+# which never fires for direct pushes). Mirrors check-types.yml's proven steps.
+name: Design Innsæit type-check (push)
+on:
+  push:
+    branches:
+      - main
+      - "claude/**"
+env:
+  NODE_OPTIONS: --max-old-space-size=12288
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+permissions:
+  contents: read
+jobs:
+  check-types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github
+      - uses: ./.github/actions/cache-checkout
+      - uses: ./.github/actions/yarn-install
+      - name: Show info
+        run: node -e "console.log(require('v8').getHeapStatistics())"
+      - name: Configure TSC problem matcher
+        run: |
+          echo "::remove-matcher owner=tsc::"
+          echo "::add-matcher::.github/matchers/tsc-absolute.json"
+      - run: yarn type-check:ci
