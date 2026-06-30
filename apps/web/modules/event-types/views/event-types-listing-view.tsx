@@ -222,7 +222,7 @@ const Item = ({
   return (
     <div className={classNames(eventTypeColor && "-ml-3", "relative flex-1 overflow-hidden pr-4 text-sm")}>
       {eventTypeColor && (
-        <div className="absolute h-full w-0.5" style={{ backgroundColor: eventTypeColor }} />
+        <div className="absolute h-full w-1.5 rounded-full" style={{ backgroundColor: eventTypeColor }} />
       )}
       <div className={classNames(eventTypeColor && "ml-3")}>
         {readOnly ? (
@@ -535,7 +535,7 @@ export const InfiniteEventTypeList = ({
 
   return (
     <div className="flex flex-col overflow-hidden rounded-md border border-subtle bg-default">
-      <ul ref={parent} className="static! w-full divide-y divide-subtle" data-testid="event-types">
+      <ul ref={parent} className="static! w-full space-y-2 p-2" data-testid="event-types">
         {pages.map((page, pageIdx) => {
           return page?.eventTypes?.map((type, index) => {
             const embedLink = `${group.profile.slug}/${type.slug}`;
@@ -557,7 +557,7 @@ export const InfiniteEventTypeList = ({
               type.schedulingType !== SchedulingType.MANAGED;
             return (
               <li key={type.id}>
-                <div className="flex w-full items-center justify-between transition hover:bg-cal-muted">
+                <div className="bg-subtle hover:bg-emphasis flex w-full items-center justify-between rounded-xl transition">
                   <div className="group flex w-full max-w-full items-center justify-between overflow-hidden px-4 py-4 sm:px-6">
                     {!(firstItem && firstItem.id === type.id) && (
                       <ArrowButton

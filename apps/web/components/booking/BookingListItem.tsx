@@ -283,15 +283,17 @@ function BookingListItem(booking: BookingItemProps) {
       data-booking-list-item="true"
       data-booking-uid={booking.uid}
       className={classNames(
-        "group relative w-full transition-all duration-100 ease-out",
-        "hover:bg-cal-muted",
-        isSelected &&
-          "bg-cal-muted before:bg-brand-default rounded-r-md before:absolute before:left-0 before:top-0 before:h-full before:w-1"
+        // Solid tonal block per booking; today's booking is the one "lit" block.
+        "group relative my-2 w-full overflow-hidden rounded-xl transition-all duration-100 ease-out",
+        booking.isToday ? "bg-emphasis ring-brand-default ring-2" : "bg-subtle hover:bg-emphasis",
+        isSelected && "ring-brand-default ring-2"
       )}>
       <div className="flex flex-col sm:flex-row">
         <div className="sm:min-w-48 hidden align-top ltr:pl-3 rtl:pr-6 sm:table-cell">
           <div className="flex h-full items-center">
-            {eventTypeColor && <div className="h-[70%] w-0.5" style={{ backgroundColor: eventTypeColor }} />}
+            {eventTypeColor && (
+              <div className="h-[70%] w-1.5 rounded-full" style={{ backgroundColor: eventTypeColor }} />
+            )}
             <ConditionalLink onClick={onClick} bookingLink={bookingLink} className="ml-3">
               <div className="cursor-pointer py-4">
                 <div className="text-emphasis text-sm leading-6">{startTime}</div>
