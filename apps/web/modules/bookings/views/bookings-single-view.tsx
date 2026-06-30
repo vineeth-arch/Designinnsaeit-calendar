@@ -551,14 +551,14 @@ export default function Success(props: PageProps) {
                     </div>
                     <div className="mb-8 mt-6 text-center last:mb-0">
                       <h3
-                        className="text-emphasis text-2xl font-semibold leading-6"
+                        className="font-cal text-emphasis text-4xl font-extrabold leading-tight -tracking-[0.02em]"
                         data-testid={isCancelled ? "cancelled-headline" : ""}
                         id="modal-headline">
                         {successPageHeadline}
                       </h3>
 
-                      <div className="mt-3">
-                        <p className="text-default">{getTitle()}</p>
+                      <div className="mt-4">
+                        <p className="text-default text-lg">{getTitle()}</p>
                       </div>
                       {props.paymentStatus &&
                         (bookingInfo.status === BookingStatus.CANCELLED ||
