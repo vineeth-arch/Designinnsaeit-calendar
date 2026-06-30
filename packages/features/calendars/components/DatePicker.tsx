@@ -473,7 +473,7 @@ const DatePicker = ({
           </div>
         ))}
       </div>
-      <div className="relative grid grid-cols-7 grid-rows-6 gap-1.5 text-center">
+      <div className="relative grid grid-cols-7 grid-rows-6 gap-2.5 text-center">
         <Days
           customClassName={{
             datePickerDate: customClassNames?.datePickersDates,

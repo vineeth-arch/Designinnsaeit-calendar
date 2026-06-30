@@ -11,6 +11,7 @@ import { markdownToSafeHTMLClient } from "@calcom/lib/markdownToSafeHTMLClient";
 import { CURRENT_TIMEZONE } from "@calcom/lib/timezoneConstants";
 import type { EventTypeTranslation } from "@calcom/prisma/client";
 import { EventTypeAutoTranslatedField } from "@calcom/prisma/enums";
+import { Logo } from "@calcom/ui/components/logo";
 import { EventMetaBlock } from "@calcom/web/modules/bookings/components/event-meta/Details";
 import { SeatsAvailabilityText } from "@calcom/web/modules/bookings/components/SeatsAvailabilityText";
 import { m } from "framer-motion";
@@ -164,9 +165,7 @@ export const EventMeta = ({
       )}
       {!isPending && !!event && (
         <m.div {...fadeInUp} layout transition={{ ...fadeInUp.transition, delay: 0.3 }}>
-          <span className="bg-brand-default text-brand font-cal mb-6 inline-grid h-9 w-9 place-items-center rounded-full text-lg font-extrabold leading-none">
-            d
-          </span>
+          <Logo inline={false} className="mb-6 block w-full max-w-[240px] [&_img]:!h-auto [&_img]:!w-full" />
           <p className="text-brand-default mb-3 text-[11px] font-bold uppercase tracking-[0.18em]">
             {t("book_a_session")}
           </p>
@@ -196,7 +195,7 @@ export const EventMeta = ({
               </ScrollableWithGradients>
             </EventMetaBlock>
           )}
-          <div className="stack-y-4 font-medium [&_svg]:text-brand-default rtl:-mr-2">
+          <div className="font-medium [&_svg]:text-brand-default [&>div]:border-subtle [&>div]:items-center [&>div]:border-t [&>div]:py-3 [&>div:first-child]:border-t-0 rtl:-mr-2">
             {rescheduleUid && bookingData && (
               <EventMetaBlock icon="calendar">
                 {t("former_time")}

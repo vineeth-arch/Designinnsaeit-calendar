@@ -149,7 +149,7 @@ export const getBookerSizeClassNames = (
     // Roomier calendar + meta when not in booking view (the public landing state).
     layout === BookerLayouts.MONTH_VIEW &&
       bookerState !== "booking" &&
-      `[--booker-main-width:540px] lg:[--booker-main-width:620px] ${getBookerMetaClass("lg:[--booker-meta-width:360px]")}`,
+      `[--booker-main-width:460px] lg:[--booker-main-width:520px] ${getBookerMetaClass("lg:[--booker-meta-width:360px]")}`,
     // Fullscreen view settings.
     layout !== BookerLayouts.MONTH_VIEW &&
       `[--booker-main-width:480px] [--booker-meta-width:340px] ${getBookerMetaClass(
