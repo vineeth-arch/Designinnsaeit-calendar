@@ -147,6 +147,7 @@ const SlotItem = ({
   };
 
   const isTimeslotUnavailable = unavailableTimeSlots.includes(slot.time);
+  const isSelected = selectedSlots?.includes(slot.time);
   return (
     <AnimatePresence>
       <div className="flex gap-2">
@@ -166,12 +167,19 @@ const SlotItem = ({
           data-time={slot.time}
           onClick={onButtonClick}
           className={classNames(
-            `hover:border-brand-default min-h-12 mb-2.5 flex h-auto w-full grow flex-col justify-center py-3 text-base font-semibold`,
-            selectedSlots?.includes(slot.time) && "border-brand-default text-brand-default",
+            `hover:border-brand-default mb-2.5 flex h-auto w-full grow flex-col justify-center py-3 text-base font-semibold`,
+            // Selected slot "blows up" on the rail: taller, accent, with a thick accent marker on the rail.
+            isSelected
+              ? "border-brand-default text-brand-default -ml-4 min-h-16 rounded-l-none border-l-4 pl-4"
+              : "min-h-12",
             `${customClassNames}`
           )}
           color="secondary">
-          <div className="flex items-center gap-2">
+          <div
+            className={classNames(
+              "flex items-center gap-2",
+              isSelected && "font-cal text-2xl leading-none -tracking-[0.02em]"
+            )}>
             {!hasTimeSlots && overlayCalendarToggled && (
               <span
                 className={classNames(
