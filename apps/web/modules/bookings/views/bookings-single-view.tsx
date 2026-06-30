@@ -503,16 +503,36 @@ export default function Success(props: PageProps) {
               aria-hidden="true">
               <div
                 className={classNames(
-                  "inline-block transform overflow-hidden rounded-lg border sm:my-8 sm:max-w-xl",
+                  "relative inline-block transform overflow-hidden rounded-lg border sm:my-8 sm:max-w-xl",
                   !isBackgroundTransparent &&
                     " bg-default dark:bg-cal-muted border-booker border-booker-width",
                   "px-8 pb-4 pt-5 text-left align-bottom transition-all sm:w-full sm:py-8 sm:align-middle"
                 )}
+                style={
+                  // Brand ripple motif: low-contrast concentric rings radiating from the corner.
+                  !isBackgroundTransparent
+                    ? {
+                        backgroundImage:
+                          "repeating-radial-gradient(circle at 92% 8%, transparent 0 64px, var(--cal-border-subtle) 64px 65px)",
+                      }
+                    : undefined
+                }
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-headline">
                 {!isFeedbackMode && (
                   <>
+                    <div className="relative mb-6 text-left">
+                      <p className="text-subtle font-cal text-xl font-medium leading-none sm:text-2xl">
+                        {date.format("dddd")}
+                      </p>
+                      <p className="text-emphasis font-cal text-5xl font-extrabold leading-[0.9] -tracking-[0.04em] sm:text-6xl">
+                        {date.format("D MMM")}
+                      </p>
+                      <p className="text-brand-default font-cal mt-1 text-xl font-bold leading-none">
+                        {date.format(is24h ? "HH:mm" : "h:mma")}
+                      </p>
+                    </div>
                     <div
                       className={classNames(isRoundRobin && "min-h-24 min-w-32 relative mx-auto h-24 w-32")}>
                       {isRoundRobin && bookingInfo.user && (
