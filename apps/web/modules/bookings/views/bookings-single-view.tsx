@@ -28,7 +28,7 @@ import { isWithinMinimumRescheduleNotice as isWithinMinimumRescheduleNoticeUtil 
 import type { nameObjectSchema } from "@calcom/features/eventtypes/lib/eventNaming";
 import { getEventName } from "@calcom/features/eventtypes/lib/eventNaming";
 import { shouldShowFieldInCustomResponses } from "@calcom/lib/bookings/SystemField";
-import { APP_NAME } from "@calcom/lib/constants";
+import { APP_NAME, WEBAPP_URL } from "@calcom/lib/constants";
 import { formatToLocalizedDate, formatToLocalizedTime, formatToLocalizedTimezone } from "@calcom/lib/dayjs";
 import useGetBrandingColours from "@calcom/lib/getBrandColours";
 import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
@@ -67,8 +67,18 @@ import CancelBooking from "@calcom/web/components/booking/CancelBooking";
 import EventReservationSchema from "@calcom/web/components/schemas/EventReservationSchema";
 import { timeZone } from "@calcom/web/lib/clock";
 
+import { BookingQRCode } from "@calcom/web/modules/bookings/components/BookingQRCode";
+
 import { usePaymentStatus } from "../hooks/usePaymentStatus";
 import type { PageProps } from "./bookings-single-view.getServerSideProps";
+
+// Postage-stamp scalloped silhouette: each layer keeps the whole card minus the holes on ONE edge;
+// intersecting all four carves scallops out of every edge + the corners. drop-shadow follows the shape.
+const STAMP_SCALLOP =
+  "radial-gradient(13px at 50% 0,#0000 98%,#000) 50% 0/26px 100% repeat-x," +
+  "radial-gradient(13px at 50% 100%,#0000 98%,#000) 50% 100%/26px 100% repeat-x," +
+  "radial-gradient(13px at 0 50%,#0000 98%,#000) 0 50%/100% 26px repeat-y," +
+  "radial-gradient(13px at 100% 50%,#0000 98%,#000) 100% 50%/100% 26px repeat-y";
 
 const stringToBoolean = z
   .string()
@@ -377,6 +387,10 @@ export default function Success(props: PageProps) {
   const rescheduleProviderName = guessEventLocationType(rescheduleLocation)?.label;
   const isBookingInPast = new Date(bookingInfo.endTime) < new Date();
   const isReschedulable = !isCancelled;
+  // The postage-stamp ticket only applies to a confirmed booking; pending/cancelled/payment/giphy
+  // states keep the original status hero.
+  const showTicketStub =
+    isReschedulable && !needsConfirmation && !isAwaitingPayment && !isCancelled && !giphyImage;
 
   const bookingCancelledEventProps = {
     booking: bookingInfo,
@@ -503,72 +517,137 @@ export default function Success(props: PageProps) {
               aria-hidden="true">
               <div
                 className={classNames(
-                  "relative inline-block transform overflow-hidden rounded-lg border sm:my-8 sm:max-w-xl",
-                  !isBackgroundTransparent &&
-                    " bg-default dark:bg-cal-muted border-booker border-booker-width",
-                  "px-8 pb-4 pt-5 text-left align-bottom transition-all sm:w-full sm:py-8 sm:align-middle"
+                  "relative inline-block transform text-left align-bottom transition-all sm:my-8 sm:w-full sm:max-w-xl sm:align-middle",
+                  showTicketStub
+                    ? // Transparent container — only the stamp block itself is masked, so the scallops
+                      // reveal the page and interactive menus below aren't clipped.
+                      "px-2 pb-4 sm:px-0"
+                    : classNames(
+                        "overflow-hidden rounded-lg px-8 pb-4 pt-5 sm:py-8",
+                        !isBackgroundTransparent &&
+                          "bg-default dark:bg-cal-muted border-booker border-booker-width border"
+                      )
                 )}
                 style={
-                  // Brand ripple motif: low-contrast concentric rings radiating from the corner.
-                  !isBackgroundTransparent
-                    ? {
-                        backgroundImage:
-                          "repeating-radial-gradient(circle at 92% 8%, transparent 0 64px, var(--cal-border-subtle) 64px 65px)",
-                      }
-                    : undefined
+                  showTicketStub
+                    ? undefined
+                    : // Brand ripple motif: low-contrast concentric rings radiating from the corner.
+                      !isBackgroundTransparent
+                      ? {
+                          backgroundImage:
+                            "repeating-radial-gradient(circle at 92% 8%, transparent 0 64px, var(--cal-border-subtle) 64px 65px)",
+                        }
+                      : undefined
                 }
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="modal-headline">
                 {!isFeedbackMode && (
                   <>
-                    <div className="relative mb-6 text-left">
-                      <p className="text-subtle font-cal text-xl font-medium leading-none sm:text-2xl">
-                        {date.format("dddd")}
-                      </p>
-                      <p className="text-emphasis font-cal text-5xl font-extrabold leading-[0.9] -tracking-[0.04em] sm:text-6xl">
-                        {date.format("D MMM")}
-                      </p>
-                      <p className="text-brand-default font-cal mt-1 text-xl font-bold leading-none">
-                        {date.format(is24h ? "HH:mm" : "h:mma")}
-                      </p>
-                    </div>
-                    <div
-                      className={classNames(isRoundRobin && "min-h-24 min-w-32 relative mx-auto h-24 w-32")}>
-                      {isRoundRobin && bookingInfo.user && (
-                        <Avatar
-                          className="mx-auto flex items-center justify-center"
-                          alt={bookingInfo.user.name || bookingInfo.user.email}
-                          size="xl"
-                          imageSrc={`${bookingInfo.user.avatarUrl}`}
-                        />
-                      )}
-                      {giphyImage && !needsConfirmation && isReschedulable && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={giphyImage} className="w-full rounded-lg" alt="Gif from Giphy" />
-                      )}
+                    {showTicketStub ? (
                       <div
-                        className={classNames(
-                          "mx-auto flex h-12 w-12 items-center justify-center rounded-full",
-                          isRoundRobin &&
-                            "border-cal-bg dark:border-cal-bg-muted absolute bottom-0 right-0 z-10 h-12 w-12 border-8",
-                          !giphyImage && isReschedulable && !needsConfirmation && !isAwaitingPayment
-                            ? "bg-cal-success"
-                            : "",
-                          !giphyImage && isReschedulable && (needsConfirmation || isAwaitingPayment)
-                            ? "bg-subtle"
-                            : "",
-                          isCancelled ? "bg-error" : ""
-                        )}>
-                        {!giphyImage && !needsConfirmation && !isAwaitingPayment && isReschedulable && (
-                          <CheckIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
-                        )}
-                        {(needsConfirmation || isAwaitingPayment) && isReschedulable && (
-                          <CalendarIcon className="text-emphasis h-5 w-5" />
-                        )}
-                        {isCancelled && <XIcon className="h-5 w-5 text-red-600 dark:text-red-200" />}
+                        className="bg-emphasis mb-6 p-6 sm:p-8"
+                        style={{
+                          WebkitMask: STAMP_SCALLOP,
+                          WebkitMaskComposite: "source-in, source-in, source-in",
+                          mask: STAMP_SCALLOP,
+                          maskComposite: "intersect",
+                          filter: "drop-shadow(0 18px 40px rgba(0,0,0,0.28))",
+                        }}>
+                        {/* Accent header block: label · event name + date */}
+                        <div className="bg-brand-default text-brand mb-7 grid grid-cols-[auto_1fr] items-stretch overflow-hidden rounded-2xl">
+                          <div className="flex items-center px-5 py-4">
+                            <span className="font-cal text-2xl font-extrabold leading-none">
+                              {t("ticket_booked")}
+                            </span>
+                          </div>
+                          <div className="flex flex-col justify-center border-l border-white/25 px-5 py-3">
+                            <span className="font-cal text-base font-bold leading-tight">{eventName}</span>
+                            <span className="text-xs font-medium opacity-80">
+                              {formatToLocalizedDate(date, undefined, "full", tz)}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Big time + styled QR */}
+                        <div className="flex items-center justify-between gap-4 px-1">
+                          <div>
+                            <p className="text-subtle text-[10px] font-bold uppercase tracking-[0.16em]">
+                              {t("appointment_time")}
+                            </p>
+                            <p className="text-emphasis font-cal text-6xl font-extrabold leading-none -tracking-[0.04em]">
+                              {date.format(is24h ? "HH:mm" : "h:mma")}
+                            </p>
+                          </div>
+                          <div className="text-emphasis h-28 w-28 shrink-0 sm:h-32 sm:w-32">
+                            <BookingQRCode
+                              value={`${WEBAPP_URL}/booking/${bookingInfo.uid}`}
+                              centerBg="var(--cal-bg-emphasis)"
+                            />
+                          </div>
+                        </div>
+                        {/* Perforation + captions */}
+                        <div className="border-default mt-5 flex justify-between border-t border-dashed pt-3">
+                          <span className="text-brand-default text-xs font-semibold">
+                            {t("appointment_time")}
+                          </span>
+                          <span className="text-brand-default text-xs font-semibold">
+                            {t("scan_for_details")}
+                          </span>
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <>
+                        <div className="relative mb-6 text-left">
+                          <p className="text-subtle font-cal text-xl font-medium leading-none sm:text-2xl">
+                            {date.format("dddd")}
+                          </p>
+                          <p className="text-emphasis font-cal text-5xl font-extrabold leading-[0.9] -tracking-[0.04em] sm:text-6xl">
+                            {date.format("D MMM")}
+                          </p>
+                          <p className="text-brand-default font-cal mt-1 text-xl font-bold leading-none">
+                            {date.format(is24h ? "HH:mm" : "h:mma")}
+                          </p>
+                        </div>
+                        <div
+                          className={classNames(
+                            isRoundRobin && "min-h-24 min-w-32 relative mx-auto h-24 w-32"
+                          )}>
+                          {isRoundRobin && bookingInfo.user && (
+                            <Avatar
+                              className="mx-auto flex items-center justify-center"
+                              alt={bookingInfo.user.name || bookingInfo.user.email}
+                              size="xl"
+                              imageSrc={`${bookingInfo.user.avatarUrl}`}
+                            />
+                          )}
+                          {giphyImage && !needsConfirmation && isReschedulable && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={giphyImage} className="w-full rounded-lg" alt="Gif from Giphy" />
+                          )}
+                          <div
+                            className={classNames(
+                              "mx-auto flex h-12 w-12 items-center justify-center rounded-full",
+                              isRoundRobin &&
+                                "border-cal-bg dark:border-cal-bg-muted absolute bottom-0 right-0 z-10 h-12 w-12 border-8",
+                              !giphyImage && isReschedulable && !needsConfirmation && !isAwaitingPayment
+                                ? "bg-cal-success"
+                                : "",
+                              !giphyImage && isReschedulable && (needsConfirmation || isAwaitingPayment)
+                                ? "bg-subtle"
+                                : "",
+                              isCancelled ? "bg-error" : ""
+                            )}>
+                            {!giphyImage && !needsConfirmation && !isAwaitingPayment && isReschedulable && (
+                              <CheckIcon className="h-5 w-5 text-green-600 dark:text-green-400" />
+                            )}
+                            {(needsConfirmation || isAwaitingPayment) && isReschedulable && (
+                              <CalendarIcon className="text-emphasis h-5 w-5" />
+                            )}
+                            {isCancelled && <XIcon className="h-5 w-5 text-red-600 dark:text-red-200" />}
+                          </div>
+                        </div>
+                      </>
+                    )}
                     <div className="mb-8 mt-6 text-center last:mb-0">
                       <h3
                         className="font-cal text-emphasis text-4xl font-extrabold leading-tight -tracking-[0.02em]"

@@ -23,19 +23,15 @@ export const inputStyles = cva(
     "text-default",
     "placeholder:text-muted",
 
-    // States
+    // States — clean border + brand-accent focus ring (no gray inset shadow)
     "hover:border-emphasis",
-    "focus:border-emphasis",
-    "focus:ring-0",
-    "focus:shadow-outline-gray-focused",
+    "focus:border-brand-default",
+    "focus:ring-1 focus:ring-brand-default",
 
     // Disabled state
     "disabled:bg-subtle",
     "disabled:hover:border-default",
     "disabled:cursor-not-allowed",
-
-    // Shadow
-    "shadow-outline-gray-rested",
 
     // Transitions
     "transition-all",

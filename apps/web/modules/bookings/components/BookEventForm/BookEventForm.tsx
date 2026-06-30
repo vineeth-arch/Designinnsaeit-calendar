@@ -123,6 +123,14 @@ export const BookEventForm = ({
         form={bookingForm}
         handleSubmit={onSubmit}
         noValidate>
+        <div className="mb-5">
+          <p className="text-brand-default text-[11px] font-bold uppercase tracking-[0.18em]">
+            {t("almost_there")}
+          </p>
+          <h2 className="text-emphasis font-cal mt-1 text-2xl font-extrabold leading-none -tracking-[0.02em]">
+            {t("confirm_your_details")}
+          </h2>
+        </div>
         <BookingFields
           isDynamicGroupBooking={!!(username && username.indexOf("+") > -1)}
           fields={eventType.bookingFields}
@@ -244,7 +252,7 @@ export const BookEventForm = ({
               loadingStates.creatingRecurringBooking ||
               isVerificationCodeSending
             }
-            className={classNames?.confirmButton}
+            className={`min-h-11 grow justify-center text-base ${classNames?.confirmButton ?? ""}`}
             data-testid={rescheduleUid && bookingData ? "confirm-reschedule-button" : "confirm-book-button"}>
             {rescheduleUid && bookingData
               ? t("reschedule")
