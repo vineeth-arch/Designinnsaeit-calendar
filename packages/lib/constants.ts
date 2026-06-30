@@ -159,8 +159,9 @@ export const CREDENTIAL_SYNC_ENDPOINT = process.env.CALCOM_CREDENTIAL_SYNC_ENDPO
 // Service Account Encryption Key for encrypting/decrypting service account keys
 export const SERVICE_ACCOUNT_ENCRYPTION_KEY = process.env.CALCOM_SERVICE_ACCOUNT_ENCRYPTION_KEY;
 
-export const DEFAULT_LIGHT_BRAND_COLOR = "#FF006C";
-export const DEFAULT_DARK_BRAND_COLOR = "#00FFCF";
+// Typed as string (not the literal) so test mocks / org overrides can hold any hex.
+export const DEFAULT_LIGHT_BRAND_COLOR: string = "#FF006C";
+export const DEFAULT_DARK_BRAND_COLOR: string = "#00FFCF";
 
 export const TOP_BANNER_HEIGHT = 40;
 
