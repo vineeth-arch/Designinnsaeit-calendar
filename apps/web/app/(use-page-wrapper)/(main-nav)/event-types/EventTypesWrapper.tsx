@@ -35,7 +35,14 @@ export function EventTypesWrapper({
   return (
     <SearchContext.Provider value={{ searchTerm, setSearchTerm, debouncedSearchTerm }}>
       <ShellMainAppDir
-        heading={t("event_types_page_title")}
+        heading={
+          <>
+            <span className="text-subtle block text-xs font-semibold uppercase tracking-[0.14em]">
+              Design Innsæit
+            </span>
+            {t("event_types_page_title")}
+          </>
+        }
         subtitle={t("event_types_page_subtitle")}
         CTA={<CTAWithContext userEventGroupsData={userEventGroupsData} />}>
         <EventTypes userEventGroupsData={userEventGroupsData} user={user} />

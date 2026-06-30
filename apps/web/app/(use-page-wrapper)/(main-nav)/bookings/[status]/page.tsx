@@ -51,7 +51,14 @@ const Page = async ({ params }: PageProps) => {
     <ShellMainAppDir
       {...(!bookingsV3Enabled
         ? {
-            heading: t("bookings"),
+            heading: (
+              <>
+                <span className="text-subtle block text-xs font-semibold uppercase tracking-[0.14em]">
+                  Design Innsæit
+                </span>
+                {t("bookings")}
+              </>
+            ),
             subtitle: t("bookings_description"),
           }
         : {})}>
