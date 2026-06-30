@@ -148,6 +148,8 @@ const SlotItem = ({
 
   const isTimeslotUnavailable = unavailableTimeSlots.includes(slot.time);
   const isSelected = selectedSlots?.includes(slot.time);
+  // Only available, not-yet-chosen slots blow up on hover; full/unavailable rows stay flat.
+  const canHoverExpand = !isSelected && !bookingFull && !isTimeslotUnavailable;
   return (
     <AnimatePresence>
       <div className="flex gap-2">
@@ -169,19 +171,25 @@ const SlotItem = ({
           color="minimal"
           className={classNames(
             // The slot is a flat "tick" on the Braun rail: time on the left, meta on the right.
-            "relative mb-1 flex h-auto w-full grow flex-row items-center justify-between gap-2 rounded-none px-0 py-2 text-left",
+            "group relative mb-1 flex h-auto w-full grow flex-row items-center justify-between gap-2 rounded-none px-0 py-2 text-left transition-all duration-200 ease-out motion-reduce:transition-none",
             // Tick mark on the rail (the wrapper supplies the rail via its left border + pl-4).
-            "before:bg-default before:absolute before:-left-4 before:top-1/2 before:h-0.5 before:w-3 before:-translate-y-1/2 before:content-['']",
+            "before:bg-default before:absolute before:-left-4 before:top-1/2 before:h-0.5 before:w-3 before:-translate-y-1/2 before:transition-all before:duration-200 before:content-['']",
+            // Accent line across the rail: always present, hidden until selected/hovered (grows from the centre).
+            "after:bg-brand-default after:absolute after:inset-x-0 after:top-1/2 after:h-[2.5px] after:origin-center after:-translate-y-1/2 after:scale-x-0 after:opacity-0 after:transition-[transform,opacity] after:duration-200 after:content-['']",
             isSelected
-              ? // Selected "blows up": tall, accent numeral, accent square marker + accent line slicing the rail.
-                "text-brand-default before:bg-brand-default min-h-[5.25rem] before:h-2.5 before:w-4 after:bg-brand-default after:absolute after:inset-x-0 after:top-1/2 after:h-[2.5px] after:-translate-y-1/2 after:opacity-50 after:content-['']"
-              : "hover:text-brand-default min-h-12",
+              ? // Chosen slot "blows up": tall, accent numeral, accent square marker + accent line slicing the rail.
+                "text-brand-default before:bg-brand-default min-h-[5.25rem] before:h-2.5 before:w-4 after:scale-x-100 after:opacity-50"
+              : "min-h-12",
+            // Same blow-up, animated, on hover for available slots.
+            canHoverExpand &&
+              "hover:text-brand-default hover:min-h-[5.25rem] hover:before:h-2.5 hover:before:w-4 hover:before:bg-brand-default hover:after:scale-x-100 hover:after:opacity-50",
             `${customClassNames}`
           )}>
           <span
             className={classNames(
-              "bg-default dark:bg-cal-muted font-cal relative z-10 flex items-center gap-2 pr-3 leading-none -tracking-[0.02em]",
+              "bg-default dark:bg-cal-muted font-cal relative z-10 flex items-center gap-2 pr-3 leading-none -tracking-[0.02em] transition-all duration-200 motion-reduce:transition-none",
               isSelected ? "text-[2.5rem] font-extrabold" : "text-lg",
+              canHoverExpand && "group-hover:text-[2.5rem] group-hover:font-extrabold",
               isTimeslotUnavailable && !isSelected && "text-subtle line-through opacity-60"
             )}>
             {!hasTimeSlots && overlayCalendarToggled && (
@@ -212,11 +220,18 @@ const SlotItem = ({
                 "bg-default dark:bg-cal-muted relative z-10 pl-2 text-[10px] font-semibold uppercase tracking-[0.12em]",
                 isSelected ? "text-brand-default font-bold" : "text-subtle"
               )}>
-              {isSelected
-                ? t("selected")
-                : bookingFull || isTimeslotUnavailable
-                  ? t("full")
-                  : `${eventData?.length ?? ""}m`}
+              {isSelected ? (
+                t("selected")
+              ) : bookingFull || isTimeslotUnavailable ? (
+                t("full")
+              ) : (
+                <>
+                  <span className="group-hover:hidden">{`${eventData?.length ?? ""}m`}</span>
+                  <span className="text-brand-default hidden font-bold group-hover:inline-block">
+                    {t("select_slot")}
+                  </span>
+                </>
+              )}
             </span>
           )}
         </Button>

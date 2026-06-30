@@ -2,6 +2,7 @@
   "book_a_session": "Book a session",
   "systems_open_slots": "Systems · {{count}} open",
   "selected": "Selected",
+  "select_slot": "Select",
   "full": "Full",
   "apply_to_all": "Apply to all",
   "identity_provider": "Identity provider",
