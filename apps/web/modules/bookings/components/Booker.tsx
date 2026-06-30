@@ -29,7 +29,6 @@ import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
 import { BookerLayouts } from "@calcom/prisma/zod-utils";
 import classNames from "@calcom/ui/classNames";
 import { DialogContent } from "@calcom/ui/components/dialog";
-import { Logo } from "@calcom/ui/components/logo";
 import { UnpublishedEntity } from "@calcom/ui/components/unpublished-entity";
 import TurnstileCaptcha from "@calcom/web/modules/auth/components/Turnstile";
 import { useSkipConfirmStep } from "@calcom/web/modules/bookings/hooks/useSkipConfirmStep";
@@ -346,6 +345,14 @@ const BookerComponent = ({
           layout === BookerLayouts.MONTH_VIEW ? "overflow-visible" : "overflow-clip",
           `${customClassNames?.bookerWrapper}`
         )}>
+        {!hideEventTypeDetails && (
+          <div className="fixed left-4 top-4 z-20">
+            <ThemeToggle
+              size="lg"
+              className="border-subtle bg-default/80 rounded-full border shadow-sm backdrop-blur [&_svg]:h-5 [&_svg]:w-5"
+            />
+          </div>
+        )}
         <div
           ref={animationScope}
           data-testid="booker-container"
@@ -401,12 +408,6 @@ const BookerComponent = ({
               <BookerSection
                 area="meta"
                 className="max-w-screen flex w-full flex-col md:w-(--booker-meta-width)">
-                {!hideEventTypeDetails && (
-                  <div className="mb-4 flex items-center justify-between gap-2">
-                    <Logo small />
-                    <ThemeToggle />
-                  </div>
-                )}
                 {!hideEventTypeDetails && orgBannerUrl && (
                   <img
                     loading="eager"

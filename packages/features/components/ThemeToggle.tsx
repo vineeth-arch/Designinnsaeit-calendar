@@ -3,13 +3,20 @@
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
+import type { ButtonProps } from "@calcom/ui/components/button";
 import { Button } from "@calcom/ui/components/button";
 
 /**
  * Quick light/dark toggle usable on every page (dashboard shell + public Booker).
  * The organizer's configured theme is applied on load; this toggle wins for the session.
  */
-export function ThemeToggle({ className }: { className?: string }) {
+export function ThemeToggle({
+  className,
+  size = "sm",
+}: {
+  className?: string;
+  size?: ButtonProps["size"];
+}) {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -22,7 +29,7 @@ export function ThemeToggle({ className }: { className?: string }) {
     <Button
       variant="icon"
       color="minimal"
-      size="sm"
+      size={size}
       className={className}
       StartIcon={isDark ? "sun" : "moon"}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
