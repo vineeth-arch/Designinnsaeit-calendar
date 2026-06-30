@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 
 import { useIsEmbed } from "@calcom/embed-core/embed-iframe";
+import { ThemeToggle } from "@calcom/features/components/ThemeToggle";
 import { useIsStandalone } from "@calcom/lib/hooks/useIsStandalone";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { SettingsIcon } from "@coss/ui/icons";
@@ -32,6 +33,7 @@ function TopNav() {
           <span className="hover:bg-cal-muted hover:text-emphasis text-default group flex items-center rounded-full text-sm font-medium transition lg:hidden">
             <KBarTrigger />
           </span>
+          <ThemeToggle />
           <button className="hover:bg-cal-muted hover:text-subtle text-muted rounded-full p-1 transition focus:outline-none focus:ring-2 focus:ring-black focus:ring-offset-2">
             <span className="sr-only">{t("settings")}</span>
             <Link href="/settings/my-account/profile">

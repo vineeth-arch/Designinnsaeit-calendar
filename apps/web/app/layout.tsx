@@ -48,23 +48,20 @@ export const viewport = {
 
 export const metadata = {
   icons: {
-    icon: "/api/logo?type=favicon-32",
-    apple: "/api/logo?type=apple-touch-icon",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/api/logo?type=favicon-32", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/favicon.svg",
     other: [
       {
         rel: "icon-mask",
         url: "/safari-pinned-tab.svg",
-        color: "#000000",
+        color: "#29009d",
       },
       {
-        url: "/api/logo?type=favicon-16",
-        sizes: "16x16",
-        type: "image/png",
-      },
-      {
-        url: "/api/logo?type=favicon-32",
-        sizes: "32x32",
-        type: "image/png",
+        url: "/favicon.svg",
+        type: "image/svg+xml",
       },
     ],
   },

@@ -18,6 +18,7 @@ import { getQueryParam } from "@calcom/features/bookings/Booker/utils/query-para
 import { Header } from "@calcom/features/bookings/components/Header";
 import { BookerSection } from "@calcom/features/bookings/components/Section";
 import { Dialog } from "@calcom/features/components/controlled-dialog";
+import { ThemeToggle } from "@calcom/features/components/ThemeToggle";
 import { scrollIntoViewSmooth } from "@calcom/lib/browser/browser.utils";
 import {
   CLOUDFLARE_SITE_ID,
@@ -28,6 +29,7 @@ import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
 import { BookerLayouts } from "@calcom/prisma/zod-utils";
 import classNames from "@calcom/ui/classNames";
 import { DialogContent } from "@calcom/ui/components/dialog";
+import { Logo } from "@calcom/ui/components/logo";
 import { UnpublishedEntity } from "@calcom/ui/components/unpublished-entity";
 import TurnstileCaptcha from "@calcom/web/modules/auth/components/Turnstile";
 import { useSkipConfirmStep } from "@calcom/web/modules/bookings/hooks/useSkipConfirmStep";
@@ -399,6 +401,12 @@ const BookerComponent = ({
               <BookerSection
                 area="meta"
                 className="max-w-screen flex w-full flex-col md:w-(--booker-meta-width)">
+                {!hideEventTypeDetails && (
+                  <div className="mb-4 flex items-center justify-between gap-2">
+                    <Logo small />
+                    <ThemeToggle />
+                  </div>
+                )}
                 {!hideEventTypeDetails && orgBannerUrl && (
                   <img
                     loading="eager"

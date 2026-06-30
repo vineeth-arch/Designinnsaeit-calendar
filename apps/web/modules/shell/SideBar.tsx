@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@calcom/features/components/ThemeToggle";
 import { ENABLE_PROFILE_SWITCHER, IS_VISUAL_REGRESSION_TESTING, WEBAPP_URL } from "@calcom/lib/constants";
 import { getPlaceholderAvatar } from "@calcom/lib/defaultAvatarImage";
 import { useIsStandalone } from "@calcom/lib/hooks/useIsStandalone";
@@ -121,6 +122,9 @@ export function SideBar({ bannersHeight, user }: SideBarProps) {
         </div>
 
         <div className="md:px-2 md:pb-4 lg:p-0">
+          <div className="flex items-center justify-center py-1 lg:justify-start lg:px-2">
+            <ThemeToggle />
+          </div>
           {bottomNavItems.map((item, index) => (
             <Tooltip side="right" content={t(item.name)} className="lg:hidden" key={item.name}>
               <ButtonOrLink
