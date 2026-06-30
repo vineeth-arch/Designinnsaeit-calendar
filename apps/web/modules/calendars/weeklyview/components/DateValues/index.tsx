@@ -68,7 +68,7 @@ export function DateValues({ showBorder, borderColor, days, containerNavRef }: P
               <span
                 className={classNames(
                   "text-emphasis mt-1 flex h-8 w-8 items-center justify-center font-medium",
-                  isToday && "bg-inverted text-inverted rounded-sm"
+                  isToday && "bg-brand-default text-brand rounded-sm"
                 )}>
                 {day.format("D")}
               </span>
@@ -94,7 +94,7 @@ export function DateValues({ showBorder, borderColor, days, containerNavRef }: P
               key={day.toString()}
               className={classNames(
                 "flex flex-1 items-center justify-center py-3 text-xs font-medium uppercase",
-                isToday && "text-default"
+                isToday && "text-brand-default font-semibold"
               )}>
               <span>
                 {formatDate(day)}{" "}
