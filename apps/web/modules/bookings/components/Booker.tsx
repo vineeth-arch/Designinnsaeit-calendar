@@ -510,7 +510,7 @@ const BookerComponent = ({
                   layout === BookerLayouts.COLUMN_VIEW)
               }
               className={classNames(
-                "border-subtle rtl:border-default flex h-full w-full flex-col overflow-x-auto px-5 py-3 pb-0 rtl:border-r ltr:md:border-l",
+                "border-subtle rtl:border-default flex h-full w-full flex-col overflow-x-auto px-7 py-6 pb-0 rtl:border-r ltr:md:border-l",
                 layout === BookerLayouts.MONTH_VIEW &&
                   "h-full overflow-hidden md:w-(--booker-timeslots-width)",
                 layout !== BookerLayouts.MONTH_VIEW && "sticky top-0"

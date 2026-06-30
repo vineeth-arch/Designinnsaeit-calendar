@@ -172,11 +172,13 @@ const SlotItem = ({
           className={classNames(
             // Flat "tick" on the Braun rail. Rows keep a FIXED height so the blow-up animates with a
             // GPU transform (no min-height/font-size reflow → no jitter, no neighbour push).
-            "group relative mb-1 flex h-auto min-h-[3.75rem] w-full grow flex-row items-center justify-between gap-2 rounded-none px-0 py-2 text-left transition-colors duration-200 ease-out motion-reduce:transition-none",
+            "group relative mb-2 flex h-auto min-h-[3.75rem] w-full grow flex-row items-center justify-between gap-2 rounded-none px-0 py-2 text-left transition-colors duration-200 ease-out motion-reduce:transition-none",
+            // The slot is a flat tick, never a boxed button — strip minimal's hover/focus bg/border/shadow.
+            "not-disabled:hover:bg-transparent not-disabled:hover:border-transparent hover:shadow-none focus-visible:bg-transparent focus-visible:border-transparent focus-visible:shadow-none",
             // Tick mark on the rail (the wrapper supplies the rail via its left border + pl-4).
             "before:bg-default before:absolute before:-left-4 before:top-1/2 before:h-0.5 before:w-3 before:-translate-y-1/2 before:transition-all before:duration-300 before:ease-out before:content-['']",
-            // Accent line across the rail: always present, hidden until selected/hovered (grows from the centre).
-            "after:bg-brand-default after:absolute after:inset-x-0 after:top-1/2 after:h-[2.5px] after:origin-center after:-translate-y-1/2 after:scale-x-0 after:opacity-0 after:transition-[transform,opacity] after:duration-300 after:ease-out after:content-['']",
+            // Accent line slicing ACROSS the rail (extends left past it), hidden until selected/hovered.
+            "after:bg-brand-default after:absolute after:-left-6 after:right-0 after:top-1/2 after:h-[2.5px] after:origin-center after:-translate-y-1/2 after:scale-x-0 after:opacity-0 after:transition-[transform,opacity] after:duration-300 after:ease-out after:content-['']",
             isSelected
               ? // Chosen slot: accent square marker + accent line slicing the rail (numeral scaled below).
                 "text-brand-default before:bg-brand-default before:h-2.5 before:w-4 after:scale-x-100 after:opacity-50"
@@ -188,7 +190,7 @@ const SlotItem = ({
           )}>
           <span
             className={classNames(
-              "bg-default dark:bg-cal-muted font-cal relative z-10 flex origin-left items-center gap-2 pr-3 text-xl font-bold leading-none -tracking-[0.02em] transition-transform duration-300 ease-out will-change-transform motion-reduce:transition-none",
+              "bg-default dark:bg-cal-muted font-cal relative z-10 flex origin-left items-center gap-2 whitespace-nowrap pr-3 text-xl font-bold leading-none -tracking-[0.02em] transition-transform duration-300 ease-out will-change-transform motion-reduce:transition-none",
               isSelected && "scale-[2]",
               canHoverExpand && "group-hover:scale-[2]",
               isTimeslotUnavailable && !isSelected && "text-subtle line-through opacity-60"

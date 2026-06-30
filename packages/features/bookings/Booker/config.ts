@@ -138,7 +138,7 @@ export const getBookerSizeClassNames = (
   return [
     // Size settings are abstracted on their own lines purely for readability.
     // General sizes, used always
-    "[--booker-timeslots-width:280px] lg:[--booker-timeslots-width:340px]",
+    "[--booker-timeslots-width:340px] lg:[--booker-timeslots-width:400px]",
     // Small calendar defaults
     layout === BookerLayouts.MONTH_VIEW && getBookerMetaClass("[--booker-meta-width:300px]"),
     // Meta column gets wider in booking view to fit the full date on a single row in case
