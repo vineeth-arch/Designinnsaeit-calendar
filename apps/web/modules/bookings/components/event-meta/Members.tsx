@@ -88,7 +88,7 @@ export const EventMembers = ({
         ]}
       />
 
-      <p className="mt-2 font-semibold text-sm text-subtle">
+      <p className="font-cal text-subtle mt-2 text-base font-medium -tracking-[0.02em]">
         {showOnlyProfileName
           ? profile.name
           : shownUsers

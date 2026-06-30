@@ -164,6 +164,12 @@ export const EventMeta = ({
       )}
       {!isPending && !!event && (
         <m.div {...fadeInUp} layout transition={{ ...fadeInUp.transition, delay: 0.3 }}>
+          <span className="bg-brand-default text-brand font-cal mb-6 inline-grid h-9 w-9 place-items-center rounded-full text-lg font-extrabold leading-none">
+            d
+          </span>
+          <p className="text-brand-default mb-3 text-[11px] font-bold uppercase tracking-[0.18em]">
+            {t("book_a_session")}
+          </p>
           <EventMembers
             schedulingType={event.schedulingType}
             users={event.subsetOfUsers}
@@ -190,7 +196,7 @@ export const EventMeta = ({
               </ScrollableWithGradients>
             </EventMetaBlock>
           )}
-          <div className="stack-y-4 font-medium rtl:-mr-2">
+          <div className="stack-y-4 font-medium [&_svg]:text-brand-default rtl:-mr-2">
             {rescheduleUid && bookingData && (
               <EventMetaBlock icon="calendar">
                 {t("former_time")}
