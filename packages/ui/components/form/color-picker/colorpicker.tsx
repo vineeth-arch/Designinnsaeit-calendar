@@ -16,6 +16,8 @@ export type ColorPickerProps = {
   popoverAlign?: React.ComponentProps<typeof Popover.Content>["align"];
   className?: string;
   resetDefaultValue?: string;
+  /** Optional brand swatches shown above the freeform picker. */
+  presetColors?: readonly string[];
 };
 
 const ColorPicker = (props: ColorPickerProps) => {
@@ -42,7 +44,10 @@ const ColorPicker = (props: ColorPickerProps) => {
           </Popover.Trigger>
         </div>
         <Popover.Portal container={props.container}>
-          <Popover.Content align={props.popoverAlign ?? "center"} sideOffset={10}>
+          <Popover.Content
+            align={props.popoverAlign ?? "center"}
+            sideOffset={10}
+            className="bg-default border-default shadow-dropdown rounded-md border p-2">
             <HexColorPicker
               color={color}
               className="h-32! w-32!"
@@ -51,6 +56,23 @@ const ColorPicker = (props: ColorPickerProps) => {
                 props.onChange(val);
               }}
             />
+            {props.presetColors && props.presetColors.length > 0 && (
+              <div className="mt-2 flex w-32 flex-wrap gap-1">
+                {props.presetColors.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    aria-label={`Use ${preset}`}
+                    className="border-subtle h-5 w-5 rounded-sm border"
+                    style={{ backgroundColor: preset }}
+                    onClick={() => {
+                      setColor(preset);
+                      props.onChange(preset);
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </Popover.Content>
         </Popover.Portal>
       </Popover.Root>

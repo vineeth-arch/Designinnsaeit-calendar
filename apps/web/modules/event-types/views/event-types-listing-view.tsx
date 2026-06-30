@@ -9,6 +9,7 @@ import { useLocale } from "@calcom/lib/hooks/useLocale";
 import { useGetTheme } from "@calcom/lib/hooks/useTheme";
 import { useTypedQuery } from "@calcom/lib/hooks/useTypedQuery";
 import { HttpError } from "@calcom/lib/http-error";
+import { nearestPaletteColor } from "@calcom/lib/eventTypeColorPalette";
 import { parseEventTypeColor } from "@calcom/lib/isEventTypeColor";
 import { localStorage } from "@calcom/lib/webstorage";
 import { MembershipRole, SchedulingType } from "@calcom/prisma/enums";
@@ -180,7 +181,9 @@ const Item = ({
   const { resolvedTheme, forcedTheme } = useGetTheme();
   const hasDarkTheme = !forcedTheme && resolvedTheme === "dark";
   const parsedeventTypeColor = parseEventTypeColor(type.eventTypeColor);
-  const eventTypeColor = parsedeventTypeColor?.[hasDarkTheme ? "darkEventTypeColor" : "lightEventTypeColor"];
+  const eventTypeColor = nearestPaletteColor(
+    parsedeventTypeColor?.[hasDarkTheme ? "darkEventTypeColor" : "lightEventTypeColor"]
+  );
   const isManagedEventType = type.schedulingType === SchedulingType.MANAGED;
   const isRoundRobinOrCollective =
     type.schedulingType === SchedulingType.ROUND_ROBIN || type.schedulingType === SchedulingType.COLLECTIVE;

@@ -1,6 +1,7 @@
 import dayjs from "@calcom/dayjs";
 import type { CalendarEvent } from "@calcom/features/calendars/weeklyview/types/events";
 import type { BookingStatus } from "@calcom/prisma/enums";
+import { nearestPaletteColor } from "@calcom/lib/eventTypeColorPalette";
 import classNames from "@calcom/ui/classNames";
 import { Tooltip } from "@calcom/ui/components/tooltip";
 import { cva } from "class-variance-authority";
@@ -128,7 +129,7 @@ export function Event({
         {(options?.color || colorClass) && (
           <div
             className={classNames("-ml-1.5 mr-1.5 h-full w-[3px] shrink-0", colorClass)}
-            style={options?.color ? { backgroundColor: options.color } : undefined}></div>
+            style={options?.color ? { backgroundColor: nearestPaletteColor(options.color) } : undefined}></div>
         )}
         <div className={classNames("flex w-full", displayType !== "single-line" && "flex-col py-1")}>
           {displayType === "single-line" && (

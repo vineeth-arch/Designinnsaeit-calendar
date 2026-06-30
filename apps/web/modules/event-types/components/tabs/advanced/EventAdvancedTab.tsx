@@ -20,6 +20,7 @@ import {
   DEFAULT_LIGHT_BRAND_COLOR,
   MAX_SEATS_PER_TIME_SLOT,
 } from "@calcom/lib/constants";
+import { EVENT_TYPE_COLOR_PALETTE } from "@calcom/lib/eventTypeColorPalette";
 import { generateHashedLink } from "@calcom/lib/generateHashedLink";
 import { checkWCAGContrastColor } from "@calcom/lib/getBrandColours";
 import { extractHostTimezone } from "@calcom/lib/hashedLinksUtils";
@@ -1370,6 +1371,7 @@ export const EventAdvancedTab = ({
               <div>
                 <p className="mb-2 block font-medium text-default text-sm">{t("light_event_type_color")}</p>
                 <ColorPicker
+                  presetColors={EVENT_TYPE_COLOR_PALETTE}
                   defaultValue={eventTypeColorState.lightEventTypeColor}
                   onChange={(value) => {
                     const newVal = {
@@ -1399,6 +1401,7 @@ export const EventAdvancedTab = ({
               <div className="mt-6 sm:mt-0">
                 <p className="mb-2 block font-medium text-default text-sm">{t("dark_event_type_color")}</p>
                 <ColorPicker
+                  presetColors={EVENT_TYPE_COLOR_PALETTE}
                   defaultValue={eventTypeColorState.darkEventTypeColor}
                   onChange={(value) => {
                     const newVal = {
