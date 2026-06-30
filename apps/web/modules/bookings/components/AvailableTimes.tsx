@@ -286,10 +286,15 @@ export const AvailableTimes = ({
           </div>
         )}
         {oooBeforeSlots && !oooAfterSlots && <OOOSlot {...slots[0]} />}
-        {slots.map((slot) => {
-          if (slot.away) return null;
-          return <SlotItem key={slot.time} slot={slot} {...props} />;
-        })}
+        {slots.some((slot) => !slot.away) && (
+          // Braun "systems" rail: a hairline timeline down the left of the slot stack.
+          <div className="border-subtle relative ml-1 border-l pl-4">
+            {slots.map((slot) => {
+              if (slot.away) return null;
+              return <SlotItem key={slot.time} slot={slot} {...props} />;
+            })}
+          </div>
+        )}
         {oooAfterSlots && !oooBeforeSlots && <OOOSlot {...slots[slots.length - 1]} className="pb-0" />}
       </div>
     </div>
