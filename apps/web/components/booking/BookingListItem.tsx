@@ -286,9 +286,9 @@ function BookingListItem(booking: BookingItemProps) {
       data-booking-list-item="true"
       data-booking-uid={booking.uid}
       className={classNames(
-        // Solid tonal block per booking; today's booking is the one "lit" block.
+        // Calm tonal blocks per booking; today's is a slightly stronger tone (no per-row accent ring).
         "group relative my-2 w-full overflow-hidden rounded-xl transition-all duration-100 ease-out",
-        booking.isToday ? "bg-emphasis ring-brand-default ring-2" : "bg-subtle hover:bg-emphasis",
+        booking.isToday ? "bg-emphasis" : "bg-subtle hover:bg-emphasis",
         isSelected && "ring-brand-default ring-2"
       )}>
       <div className="flex flex-col sm:flex-row">

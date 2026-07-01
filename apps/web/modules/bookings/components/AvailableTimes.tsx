@@ -6,11 +6,9 @@ import dayjs from "@calcom/dayjs";
 import type { IOutOfOfficeData } from "@calcom/features/availability/lib/getUserAvailability";
 import { useBookerStoreContext } from "@calcom/features/bookings/Booker/BookerStoreProvider";
 import { useBookerTime } from "@calcom/features/bookings/Booker/hooks/useBookerTime";
-import { getQueryParam } from "@calcom/features/bookings/Booker/utils/query-param";
 import { useCheckOverlapWithOverlay } from "@calcom/features/bookings/lib/useCheckOverlapWithOverlay";
 import type { BookerEvent, Slots } from "@calcom/features/bookings/types";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
-import { localStorage } from "@calcom/lib/webstorage";
 import classNames from "@calcom/ui/classNames";
 import { Button } from "@calcom/ui/components/button";
 import { SkeletonText } from "@calcom/ui/components/skeleton";
@@ -106,9 +104,6 @@ const SlotItem = ({
     return eventData?.price > 0 && !Number.isNaN(paymentAppData.price) && paymentAppData.price > 0;
   }, [eventData]);
 
-  const overlayCalendarToggled =
-    getQueryParam("overlayCalendar") === "true" || localStorage.getItem("overlayCalendarSwitchDefault");
-
   const { timeFormat, timezone } = useBookerTime();
   const bookingData = useBookerStoreContext((state) => state.bookingData);
   const layout = useBookerStoreContext((state) => state.layout);
@@ -177,8 +172,9 @@ const SlotItem = ({
             "not-disabled:hover:bg-transparent not-disabled:hover:border-transparent hover:shadow-none focus-visible:bg-transparent focus-visible:border-transparent focus-visible:shadow-none",
             // Tick mark on the rail (the wrapper supplies the rail via its left border + pl-4).
             "before:bg-default before:absolute before:-left-4 before:top-1/2 before:h-0.5 before:w-3 before:-translate-y-1/2 before:transition-all before:duration-300 before:ease-out before:content-['']",
-            // Accent line slicing ACROSS the rail to the column's left edge, hidden until selected/hovered.
-            "after:bg-brand-default after:absolute after:-left-9 after:right-0 after:top-1/2 after:h-[2.5px] after:origin-center after:-translate-y-1/2 after:scale-x-0 after:opacity-0 after:transition-[transform,opacity] after:duration-300 after:ease-out after:content-['']",
+            // Accent line running the FULL width of the timeline (crosses the rail on the left), hidden
+            // until selected/hovered.
+            "after:bg-brand-default after:absolute after:-left-6 after:-right-1 after:top-1/2 after:h-[2.5px] after:origin-center after:-translate-y-1/2 after:scale-x-0 after:opacity-0 after:transition-[transform,opacity] after:duration-300 after:ease-out after:content-['']",
             isSelected
               ? // Chosen slot: accent square marker + accent line slicing the rail (numeral scaled below).
                 "text-brand-default before:bg-brand-default before:h-2.5 before:w-[18px] after:scale-x-100 after:opacity-[0.55]"
@@ -198,14 +194,6 @@ const SlotItem = ({
               canHoverExpand && "group-hover:text-brand-default group-hover:scale-[2]",
               isTimeslotUnavailable && !isSelected && "text-subtle line-through opacity-60"
             )}>
-            {!hasTimeSlots && overlayCalendarToggled && (
-              <span
-                className={classNames(
-                  "inline-block h-2 w-2 rounded-full",
-                  isOverlapping ? "bg-rose-600" : "bg-emerald-400"
-                )}
-              />
-            )}
             {computedDateWithUsersTimezone.format(timeFormat)}
           </span>
           {hasTimeSlots && !bookingFull ? (

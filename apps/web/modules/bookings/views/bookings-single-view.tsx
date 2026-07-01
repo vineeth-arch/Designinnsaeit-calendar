@@ -547,7 +547,7 @@ export default function Success(props: PageProps) {
                   <>
                     {showTicketStub ? (
                       <div
-                        className="text-emphasis relative mb-6 aspect-[509/354] w-full"
+                        className="text-emphasis relative mb-6 w-full p-7 sm:p-9"
                         style={{
                           // Near-white paper in light, lifted indigo in dark — a clearly elevated stamp.
                           background: "var(--cal-stamp)",
@@ -562,60 +562,51 @@ export default function Success(props: PageProps) {
                           filter:
                             "drop-shadow(16px 16px 22px rgba(0,0,0,0.30)) drop-shadow(0 4px 12px rgba(0,0,0,0.16))",
                         }}>
-                        <div className="absolute inset-0 flex flex-col justify-between p-[6%]">
-                          {/* Notched accent header block: label · event name + date */}
-                          <div
-                            className="bg-brand-default text-brand relative aspect-[437/59] w-full"
-                            style={{
-                              WebkitMaskImage: "url(/ticket-header.svg)",
-                              maskImage: "url(/ticket-header.svg)",
-                              WebkitMaskSize: "100% 100%",
-                              maskSize: "100% 100%",
-                              WebkitMaskRepeat: "no-repeat",
-                              maskRepeat: "no-repeat",
-                            }}>
-                            <div className="absolute inset-0 grid grid-cols-[34%_1fr] items-center">
-                              <div className="flex h-full items-center pl-[7%]">
-                                <span className="font-cal text-xl font-extrabold leading-none sm:text-2xl">
-                                  {t("ticket_booked")}
-                                </span>
-                              </div>
-                              <div className="flex min-w-0 flex-col justify-center pl-[6%] pr-[5%]">
-                                <span className="font-cal truncate text-sm font-bold leading-tight sm:text-base">
-                                  {eventName}
-                                </span>
-                                <span className="truncate text-[11px] font-medium opacity-85 sm:text-xs">
-                                  {formatToLocalizedDate(date, undefined, "long", tz)}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                          {/* Big time + styled QR */}
-                          <div className="flex items-center justify-between gap-4">
-                            <div>
-                              <p className="text-subtle text-[10px] font-bold uppercase tracking-[0.16em]">
-                                {t("appointment_time")}
-                              </p>
-                              <p className="text-emphasis font-cal text-5xl font-extrabold leading-none -tracking-[0.04em] sm:text-6xl">
-                                {date.format(is24h ? "HH:mm" : "h:mma")}
-                              </p>
-                            </div>
-                            <div className="h-24 w-24 shrink-0 sm:h-28 sm:w-28">
-                              <BookingQRCode
-                                value={`${WEBAPP_URL}/booking/${bookingInfo.uid}`}
-                                centerBg="var(--cal-stamp)"
-                              />
-                            </div>
-                          </div>
-                          {/* Perforation + captions */}
-                          <div className="border-default flex justify-between border-t border-dashed pt-3">
-                            <span className="text-brand-default text-xs font-semibold">
-                              {t("appointment_time")}
-                            </span>
-                            <span className="text-brand-default text-xs font-semibold">
-                              {t("scan_for_details")}
+                        {/* Notched accent header block: label · event name + date (wraps to 2–3 lines) */}
+                        <div
+                          className="bg-brand-default text-brand relative mb-7 grid w-full grid-cols-[34%_1fr] items-stretch"
+                          style={{
+                            WebkitMaskImage: "url(/ticket-header.svg)",
+                            maskImage: "url(/ticket-header.svg)",
+                            WebkitMaskSize: "100% 100%",
+                            maskSize: "100% 100%",
+                            WebkitMaskRepeat: "no-repeat",
+                            maskRepeat: "no-repeat",
+                          }}>
+                          <div className="flex items-center px-6 py-4">
+                            <span className="font-cal text-2xl font-extrabold leading-none sm:text-3xl">
+                              {t("ticket_booked")}
                             </span>
                           </div>
+                          <div className="flex min-w-0 flex-col justify-center py-4 pl-5 pr-6">
+                            <span className="font-cal line-clamp-3 text-sm font-bold leading-tight sm:text-base">
+                              {eventName}
+                            </span>
+                            <span className="mt-1 text-[11px] font-medium opacity-85 sm:text-xs">
+                              {formatToLocalizedDate(date, undefined, "long", tz)}
+                            </span>
+                          </div>
+                        </div>
+                        {/* Big time + styled QR */}
+                        <div className="mb-7 grid grid-cols-2 items-center gap-6">
+                          <p className="text-emphasis font-cal text-center text-6xl font-extrabold leading-none -tracking-[0.04em] sm:text-7xl">
+                            {date.format(is24h ? "HH:mm" : "h:mma")}
+                          </p>
+                          <div className="mx-auto h-36 w-36 sm:h-40 sm:w-40">
+                            <BookingQRCode
+                              value={`${WEBAPP_URL}/booking/${bookingInfo.uid}`}
+                              centerBg="var(--cal-stamp)"
+                            />
+                          </div>
+                        </div>
+                        {/* Perforation + captions, centered under the time and the QR */}
+                        <div className="border-default grid grid-cols-2 border-t border-dashed pt-3">
+                          <span className="text-brand-default text-center text-xs font-semibold">
+                            {t("appointment_time")}
+                          </span>
+                          <span className="text-brand-default text-center text-xs font-semibold">
+                            {t("scan_for_details")}
+                          </span>
                         </div>
                       </div>
                     ) : (
