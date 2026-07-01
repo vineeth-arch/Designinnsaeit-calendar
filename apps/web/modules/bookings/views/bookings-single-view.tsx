@@ -385,6 +385,16 @@ export default function Success(props: PageProps) {
   const showTicketStub =
     isReschedulable && !needsConfirmation && !isAwaitingPayment && !isCancelled && !giphyImage;
 
+  const shareableMeetingUrl =
+    locationVideoCallUrl || (locationToDisplay?.startsWith("http") ? locationToDisplay : null);
+  const whatsappShareMessage = [
+    eventName,
+    `${date.format("dddd, MMM D")} · ${date.format(is24h ? "HH:mm" : "h:mma")} (${tz})`,
+    shareableMeetingUrl ? `Join: ${shareableMeetingUrl}` : null,
+  ]
+    .filter(Boolean)
+    .join("\n");
+
   const bookingCancelledEventProps = {
     booking: bookingInfo,
     organizer: {
@@ -1031,6 +1041,14 @@ export default function Success(props: PageProps) {
                                     {t("cancel")}
                                   </button>
                                 )}
+                                <a
+                                  data-testid="share-whatsapp"
+                                  href={`https://wa.me/?text=${encodeURIComponent(whatsappShareMessage)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="border-subtle text-emphasis hover:bg-emphasis inline-flex items-center justify-center rounded-lg border px-5 py-2.5 text-sm font-semibold transition">
+                                  {t("share_on_whatsapp")}
+                                </a>
                               </div>
                             </>
                           )}
