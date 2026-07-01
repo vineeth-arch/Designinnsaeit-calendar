@@ -33,9 +33,9 @@ export const V2BaseEmailHtml = (props: {
             html={`<!--[if mso | IE]><table align="center" border="0" cellpadding="0" cellspacing="0" class="" style="width:600px;" width="600" ><tr><td style="line-height:0px;font-size:0px;mso-line-height-rule:exactly;"><![endif]-->`}
           />
           <div style={{ height: 40, lineHeight: "40px", fontSize: 0 }}>&nbsp;</div>
-          <EmailBrandHeader />
+          <EmailBrandHeader subtitle={props.subtitle} />
           {props.headerType && <EmailSchedulingBodyHeader headerType={props.headerType} />}
-          {props.title && <EmailScheduledBodyHeaderContent title={props.title} subtitle={props.subtitle} />}
+          {props.title && <EmailScheduledBodyHeaderContent title={props.title} />}
           {(props.headerType || props.title || props.subtitle) && <EmailSchedulingBodyDivider />}
 
           <RawHtml

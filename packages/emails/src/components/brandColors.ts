@@ -4,6 +4,7 @@
 // the brand shows in the header band, accents (CTA/divider/links) and footer.
 export const EMAIL_BRAND = {
   mint: "#00FFCF",
+  mintMuted: "#9fdccf",
   indigo: "#2C0098",
   ink: "#0D0035",
   text: "#EDEAFB",
@@ -14,3 +15,4 @@ export const EMAIL_BRAND = {
 } as const;
 
 export const EMAIL_BRAND_NAME = "Design Innsæit";
+export const EMAIL_BRAND_TAGLINE = "Brand Strategy & Packaging Design Studio";

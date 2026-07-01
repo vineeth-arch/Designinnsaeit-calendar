@@ -59,16 +59,12 @@ export const BaseEmailHtml = (props: {
               padding: "2px",
               backgroundColor: "#FFFFFF",
             }}>
-            <EmailBrandHeader />
+            <EmailBrandHeader subtitle={props.subtitle} />
             {props.headerType && (
               <EmailSchedulingBodyHeader headerType={props.headerType} headStyles={{ border: 0 }} />
             )}
             {props.title && (
-              <EmailScheduledBodyHeaderContent
-                headStyles={{ border: 0 }}
-                title={props.title}
-                subtitle={props.subtitle}
-              />
+              <EmailScheduledBodyHeaderContent headStyles={{ border: 0 }} title={props.title} />
             )}
             {(props.headerType || props.title || props.subtitle) && (
               <EmailSchedulingBodyDivider headStyles={{ border: 0 }} />

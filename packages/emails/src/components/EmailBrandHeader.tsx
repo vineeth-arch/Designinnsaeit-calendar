@@ -1,42 +1,52 @@
-import { EMAIL_BRAND, EMAIL_BRAND_NAME } from "./brandColors";
+import { WEBAPP_URL } from "@calcom/lib/constants";
+
+import { EMAIL_BRAND, EMAIL_BRAND_TAGLINE } from "./brandColors";
 import Row from "./Row";
 
-// A branded ink band at the very top of every email: the Design Innsæit wordmark
-// on ink with a mint accent rule. Table/inline styles only (email-safe); renders
-// without any image asset so branding shows even before a logo PNG is dropped in.
-const EmailBrandHeader = () => {
+// The branded ink header bar at the top of every email: logo image + studio
+// tagline + an eyebrow line that carries this email's subtitle. Table/inline
+// styles only (email-safe).
+const EmailBrandHeader = ({ subtitle }: { subtitle?: React.ReactNode }) => {
   return (
     <div style={{ margin: "0px auto", maxWidth: 600 }}>
       <Row align="center" border="0" style={{ width: "100%" }}>
         <td
           style={{
             direction: "ltr",
-            padding: "24px 40px 20px 40px",
+            backgroundColor: EMAIL_BRAND.indigo,
+            borderRadius: "12px 12px 0 0",
+            padding: "20px 28px",
             textAlign: "left",
-            backgroundColor: EMAIL_BRAND.ink,
-            borderRadius: "8px 8px 0 0",
           }}>
+          <img
+            src={`${WEBAPP_URL}/emails/logo.png`}
+            width="260"
+            alt="Design Innsæit"
+            style={{ display: "block", border: "0", width: "260px", maxWidth: "70%", height: "auto" }}
+          />
           <div
             style={{
               fontFamily: "Roboto, Helvetica, sans-serif",
-              fontSize: 20,
-              fontWeight: 700,
-              letterSpacing: "-0.01em",
-              lineHeight: 1.1,
-              color: EMAIL_BRAND.text,
+              color: EMAIL_BRAND.mint,
+              fontSize: 12,
+              marginTop: 8,
+              letterSpacing: "0.03em",
             }}>
-            {EMAIL_BRAND_NAME}
+            {EMAIL_BRAND_TAGLINE}
           </div>
-          <div
-            style={{
-              marginTop: 10,
-              height: 3,
-              width: 44,
-              lineHeight: "3px",
-              fontSize: 0,
-              backgroundColor: EMAIL_BRAND.mint,
-            }}
-          />
+          {subtitle && (
+            <div
+              style={{
+                fontFamily: "Roboto, Helvetica, sans-serif",
+                color: EMAIL_BRAND.mintMuted,
+                fontSize: 11,
+                marginTop: 4,
+                textTransform: "uppercase",
+                letterSpacing: "0.12em",
+              }}>
+              {subtitle}
+            </div>
+          )}
         </td>
       </Row>
     </div>
