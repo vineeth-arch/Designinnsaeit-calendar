@@ -1,6 +1,6 @@
 import { getWeekdayNames, formatWeekday } from "./dateTimeFormatter";
 
-type WeekdayFormat = "short" | "long";
+type WeekdayFormat = "narrow" | "short" | "long";
 
 export function weekdayNames(locale: string | string[], weekStart = 0, format: WeekdayFormat = "long") {
   const normalizedLocale = Array.isArray(locale) ? locale[0] : locale || "en";

@@ -14,7 +14,7 @@ interface DateTimeFormatOptions {
 const MAX_FORMATTER_CACHE = 1000;
 const MAX_WEEKDAY_CACHE = 500;
 
-const WEEKDAY_FORMATS = { short: "ddd", long: "dddd" } as const;
+const WEEKDAY_FORMATS = { narrow: "dd", short: "ddd", long: "dddd" } as const;
 const MONTH_FORMATS = { long: "MMMM", short: "MMM", numeric: "M", "2-digit": "MM", narrow: "MMM" } as const;
 const DATE_FORMATS = {
   full: "dddd, MMMM D, YYYY",
@@ -100,14 +100,22 @@ export function formatDateTimeRange(startDate: Date, endDate: Date, options: Dat
   return `${formatWithDayjs(startDate, options)} — ${formatWithDayjs(endDate, options)}`;
 }
 
-export function formatWeekday(locale: string, day: number, format: "short" | "long"): string {
+export function formatWeekday(
+  locale: string,
+  day: number,
+  format: "narrow" | "short" | "long"
+): string {
   if (isSupported(locale)) {
     return getFormatter(locale, { weekday: format }).format(getDateForWeekday(day));
   }
   return dayjs().day(day).locale(locale).format(WEEKDAY_FORMATS[format]);
 }
 
-export function getWeekdayNames(locale: string, weekStart = 0, format: "short" | "long" = "long"): string[] {
+export function getWeekdayNames(
+  locale: string,
+  weekStart = 0,
+  format: "narrow" | "short" | "long" = "long"
+): string[] {
   const cacheKey = `${locale}|${weekStart}|${format}`;
   let names = weekdayCache.get(cacheKey);
 
