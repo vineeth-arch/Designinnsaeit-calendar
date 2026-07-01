@@ -30,6 +30,9 @@ import AttendeeCancelledSeatEmail from "./templates/attendee-cancelled-seat-emai
 import AttendeeDeclinedEmail from "./templates/attendee-declined-email";
 import AttendeeLocationChangeEmail from "./templates/attendee-location-change-email";
 import AttendeeRequestEmail from "./templates/attendee-request-email";
+import AttendeeFollowUpEmail from "./templates/attendee-follow-up-email";
+import AttendeeReminderEmail from "./templates/attendee-reminder-email";
+import type { ReminderLabel } from "./templates/attendee-reminder-email";
 import AttendeeRescheduledEmail from "./templates/attendee-rescheduled-email";
 import AttendeeScheduledEmail from "./templates/attendee-scheduled-email";
 import AttendeeUpdatedEmail from "./templates/attendee-updated-email";
@@ -577,6 +580,20 @@ export const sendOrganizerRequestReminderEmail = async (
       );
     }
   }
+};
+
+export const sendAttendeeReminderEmail = async (
+  calEvent: CalendarEvent,
+  attendee: Person,
+  reminderLabel: ReminderLabel
+) => {
+  const calendarEvent = formatCalEvent(calEvent);
+  await sendEmail(() => new AttendeeReminderEmail(calendarEvent, attendee, reminderLabel));
+};
+
+export const sendAttendeeFollowUpEmail = async (calEvent: CalendarEvent, attendee: Person) => {
+  const calendarEvent = formatCalEvent(calEvent);
+  await sendEmail(() => new AttendeeFollowUpEmail(calendarEvent, attendee));
 };
 
 export const sendAwaitingPaymentEmailAndSMS = async (
