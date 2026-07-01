@@ -81,7 +81,12 @@ export const AvailableTimesHeader = ({
       <span className="text-subtle flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.14em]">
         {availableMonth ?? date.format("MMM")} ·
         {showTimeFormatToggle && (
-          <TimeFormatToggle customClassName={customClassNames?.availableTimeSlotsTimeFormatToggle} />
+          <TimeFormatToggle
+            customClassName={classNames(
+              "!rounded-full [&_button]:!rounded-full [&_button]:!px-2.5 [&_button]:!py-1 [&_button]:font-bold [&_button]:uppercase [&_button]:tracking-[0.08em]",
+              customClassNames?.availableTimeSlotsTimeFormatToggle
+            )}
+          />
         )}
       </span>
     </header>

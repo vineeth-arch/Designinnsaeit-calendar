@@ -472,8 +472,9 @@ export default function Success(props: PageProps) {
       {!isEmbed && !isFeedbackMode && (
         <div className="fixed right-4 top-4 z-50">
           <ThemeToggle
-            size="lg"
-            className="border-subtle bg-default/80 rounded-full border shadow-sm backdrop-blur [&_svg]:h-5 [&_svg]:w-5"
+            withLabel
+            size="base"
+            className="border-subtle bg-default/80 text-emphasis gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm backdrop-blur [&_svg]:h-4 [&_svg]:w-4"
           />
         </div>
       )}
@@ -677,7 +678,8 @@ export default function Success(props: PageProps) {
                         (bookingInfo.status === BookingStatus.CANCELLED ||
                           bookingInfo.status === BookingStatus.REJECTED) && <h4>{paymentStatusMessage}</h4>}
 
-                      <div className="border-subtle text-default mt-8 grid grid-cols-3 gap-x-4 border-t pt-8 text-left rtl:text-right sm:gap-x-0">
+                      <div className="border-subtle text-default mt-8 border-t pt-8 text-left rtl:text-right">
+                        <div className="grid grid-cols-3 gap-x-4 sm:gap-x-0">
                         {(isCancelled || reschedule) && cancellationReason && (
                           <>
                             <div className="font-medium">
@@ -709,47 +711,57 @@ export default function Success(props: PageProps) {
                             </div>
                           </>
                         )}
-                        <div className="font-medium">{t("what")}</div>
-                        <div
-                          className="wrap-break-word col-span-2 mb-6 last:mb-0"
-                          data-testid="booking-title">
-                          {isRoundRobin
-                            ? typeof bookingInfo.title === "string"
-                              ? bookingInfo.title
-                              : eventName
-                            : eventName}
                         </div>
-                        <div className="font-medium">{t("when")}</div>
-                        <div className="col-span-2 mb-6 last:mb-0">
-                          {reschedule && !!formerTime && (
-                            <p className="line-through">
+                        <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+                          <div>
+                            <div className="text-subtle text-[11px] font-bold uppercase tracking-[0.08em]">
+                              {t("what")}
+                            </div>
+                            <div className="wrap-break-word mt-1.5" data-testid="booking-title">
+                              {isRoundRobin
+                                ? typeof bookingInfo.title === "string"
+                                  ? bookingInfo.title
+                                  : eventName
+                                : eventName}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-subtle text-[11px] font-bold uppercase tracking-[0.08em]">
+                              {t("when")}
+                            </div>
+                            <div className="mt-1.5">
+                              {reschedule && !!formerTime && (
+                                <p className="line-through">
+                                  <RecurringBookings
+                                    eventType={eventType}
+                                    duration={calculatedDuration}
+                                    recurringBookings={props.recurringBookings}
+                                    allRemainingBookings={allRemainingBookings}
+                                    date={dayjs(formerTime)}
+                                    is24h={is24h}
+                                    isCancelled={isCancelled}
+                                    tz={tz}
+                                  />
+                                </p>
+                              )}
                               <RecurringBookings
                                 eventType={eventType}
                                 duration={calculatedDuration}
                                 recurringBookings={props.recurringBookings}
                                 allRemainingBookings={allRemainingBookings}
-                                date={dayjs(formerTime)}
+                                date={date}
                                 is24h={is24h}
                                 isCancelled={isCancelled}
                                 tz={tz}
                               />
-                            </p>
-                          )}
-                          <RecurringBookings
-                            eventType={eventType}
-                            duration={calculatedDuration}
-                            recurringBookings={props.recurringBookings}
-                            allRemainingBookings={allRemainingBookings}
-                            date={date}
-                            is24h={is24h}
-                            isCancelled={isCancelled}
-                            tz={tz}
-                          />
-                        </div>
-                        {(bookingInfo?.user || bookingInfo?.attendees) && (
-                          <>
-                            <div className="font-medium">{t("who")}</div>
-                            <div className="col-span-2 last:mb-0">
+                            </div>
+                          </div>
+                          {(bookingInfo?.user || bookingInfo?.attendees) && (
+                            <div className="sm:col-span-2">
+                              <div className="text-subtle text-[11px] font-bold uppercase tracking-[0.08em]">
+                                {t("who")}
+                              </div>
+                              <div className="mt-1.5">
                               {bookingInfo?.user && (
                                 <div className="mb-3">
                                   <div>
@@ -789,13 +801,15 @@ export default function Success(props: PageProps) {
                                   </div>
                                 );
                               })}
+                              </div>
                             </div>
-                          </>
-                        )}
-                        {locationToDisplay && !isCancelled && (
-                          <>
-                            <div className="mt-3 font-medium">{t("where")}</div>
-                            <div className="col-span-2 mt-3" data-testid="where">
+                          )}
+                          {locationToDisplay && !isCancelled && (
+                            <div>
+                              <div className="text-subtle text-[11px] font-bold uppercase tracking-[0.08em]">
+                                {t("where")}
+                              </div>
+                              <div className="mt-1.5" data-testid="where">
                               {!rescheduleLocation || locationToDisplay === rescheduleLocationToDisplay ? (
                                 <DisplayLocation
                                   locationToDisplay={locationToDisplay}
@@ -817,9 +831,11 @@ export default function Success(props: PageProps) {
                                   />
                                 </>
                               )}
+                              </div>
                             </div>
-                          </>
-                        )}
+                          )}
+                        </div>
+                        <div className="grid grid-cols-3 gap-x-4 sm:gap-x-0">
                         {props.paymentStatus && (
                           <>
                             <div className="mt-3 font-medium">
@@ -911,6 +927,7 @@ export default function Success(props: PageProps) {
                               </div>
                             </>
                           )}
+                        </div>
                       </div>
                       <div className="text-bookingdark dark:border-darkgray-200 mt-8 text-left dark:text-gray-300">
                         {eventType.bookingFields.map((field) => {
@@ -989,45 +1006,31 @@ export default function Success(props: PageProps) {
                             (!isBookingInPast && canCancel)) && (
                             <>
                               <hr className="border-subtle mb-8" />
-                              <div className="text-center last:pb-0">
-                                <span className="text-emphasis ltr:mr-2 rtl:ml-2">
-                                  {t("need_to_make_a_change")}
-                                </span>
-
-                                <>
-                                  {!props.recurringBookings &&
-                                    (!isBookingInPast || eventType.allowReschedulingPastBookings) &&
-                                    canReschedule &&
-                                    !isRescheduleDisabled && (
-                                      <span className="text-default inline">
-                                        <Link
-                                          href={`/reschedule/${seatReferenceUid || bookingInfo?.uid}${
-                                            currentUserEmail
-                                              ? `?rescheduledBy=${encodeURIComponent(currentUserEmail)}`
-                                              : ""
-                                          }`}
-                                          className="underline"
-                                          data-testid="reschedule-link">
-                                          {t("reschedule")}
-                                        </Link>
-                                        {!isBookingInPast && canCancel && (
-                                          <span className="mx-2">{t("or_lowercase")}</span>
-                                        )}
-                                      </span>
-                                    )}
-
-                                  {!isBookingInPast && canCancel && (
-                                    <button
-                                      data-testid="cancel"
-                                      className={classNames(
-                                        "text-default underline",
-                                        props.recurringBookings && "ltr:mr-2 rtl:ml-2"
-                                      )}
-                                      onClick={() => setIsCancellationMode(true)}>
-                                      {t("cancel")}
-                                    </button>
+                              <div className="flex flex-wrap items-center justify-center gap-3 last:pb-0">
+                                {!props.recurringBookings &&
+                                  (!isBookingInPast || eventType.allowReschedulingPastBookings) &&
+                                  canReschedule &&
+                                  !isRescheduleDisabled && (
+                                    <Link
+                                      href={`/reschedule/${seatReferenceUid || bookingInfo?.uid}${
+                                        currentUserEmail
+                                          ? `?rescheduledBy=${encodeURIComponent(currentUserEmail)}`
+                                          : ""
+                                      }`}
+                                      className="border-subtle text-emphasis hover:bg-emphasis inline-flex items-center justify-center rounded-lg border px-5 py-2.5 text-sm font-semibold transition"
+                                      data-testid="reschedule-link">
+                                      {t("reschedule")}
+                                    </Link>
                                   )}
-                                </>
+
+                                {!isBookingInPast && canCancel && (
+                                  <button
+                                    data-testid="cancel"
+                                    className="border-subtle text-emphasis hover:bg-emphasis inline-flex items-center justify-center rounded-lg border px-5 py-2.5 text-sm font-semibold transition"
+                                    onClick={() => setIsCancellationMode(true)}>
+                                    {t("cancel")}
+                                  </button>
+                                )}
                               </div>
                             </>
                           )}

@@ -165,7 +165,10 @@ export const EventMeta = ({
       )}
       {!isPending && !!event && (
         <m.div {...fadeInUp} layout transition={{ ...fadeInUp.transition, delay: 0.3 }}>
-          <Logo inline={false} className="mb-6 block w-full max-w-[240px] [&_img]:!h-auto [&_img]:!w-full" />
+          <Logo
+            inline={false}
+            className="mb-7 block w-full max-w-[300px] text-left [&_img]:!mx-0 [&_img]:!h-auto [&_img]:!w-full"
+          />
           <p className="text-brand-default mb-3 text-[11px] font-bold uppercase tracking-[0.18em]">
             {t("book_a_session")}
           </p>

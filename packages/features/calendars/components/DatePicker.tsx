@@ -430,12 +430,13 @@ const DatePicker = ({
           )}
         </span>
         <div className="text-emphasis">
-          <div className="flex">
+          <div className="flex gap-2">
             <Button
               className={classNames(
-                `group p-1 opacity-70 transition hover:opacity-100 rtl:rotate-180`,
-                !browsingDate.isAfter(dayjs()) &&
-                  `disabled:text-bookinglighter hover:bg-background hover:opacity-70`,
+                `group text-default hover:border-brand-default hover:text-brand-default h-9 w-9 rounded-full border p-0 transition rtl:rotate-180`,
+                !browsingDate.isAfter(dayjs())
+                  ? "border-subtle disabled:text-muted"
+                  : "border-default",
                 customClassNames?.datePickerToggle
               )}
               onClick={() => changeMonth(-1)}
@@ -448,7 +449,7 @@ const DatePicker = ({
             />
             <Button
               className={classNames(
-                `group p-1 opacity-70 transition hover:opacity-100 rtl:rotate-180`,
+                `group text-default hover:border-brand-default hover:text-brand-default border-default h-9 w-9 rounded-full border p-0 transition rtl:rotate-180`,
                 `${customClassNames?.datePickerToggle}`
               )}
               onClick={() => changeMonth(+1)}
@@ -462,11 +463,11 @@ const DatePicker = ({
         </div>
       </div>
       <div className="border-subtle mb-2 grid grid-cols-7 gap-4 border-b border-t text-center md:mb-0 md:border-0">
-        {weekdayNames(locale, weekStart, "short").map((weekDay) => (
+        {weekdayNames(locale, weekStart, "narrow").map((weekDay, i) => (
           <div
-            key={weekDay}
+            key={`${weekDay}-${i}`}
             className={classNames(
-              `text-emphasis my-4 text-xs font-medium uppercase tracking-widest`,
+              `text-subtle my-4 text-xs font-bold uppercase tracking-widest`,
               customClassNames?.datePickerDays
             )}>
             {weekDay}

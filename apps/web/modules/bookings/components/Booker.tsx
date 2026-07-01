@@ -348,8 +348,9 @@ const BookerComponent = ({
         {!hideEventTypeDetails && (
           <div className="fixed left-4 top-4 z-20">
             <ThemeToggle
-              size="lg"
-              className="border-subtle bg-default/80 rounded-full border shadow-sm backdrop-blur [&_svg]:h-5 [&_svg]:w-5"
+              withLabel
+              size="base"
+              className="border-subtle bg-default/80 text-emphasis gap-2 rounded-full border px-4 py-2 text-sm font-semibold shadow-sm backdrop-blur [&_svg]:h-4 [&_svg]:w-4"
             />
           </div>
         )}

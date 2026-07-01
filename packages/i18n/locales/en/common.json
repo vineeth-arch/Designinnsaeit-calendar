@@ -1,5 +1,7 @@
 {
   "book_a_session": "Book a session",
+  "light_mode": "Light mode",
+  "dark_mode": "Dark mode",
   "systems_open_slots": "Systems · {{count}} open",
   "selected": "Selected",
   "select_slot": "Select",
