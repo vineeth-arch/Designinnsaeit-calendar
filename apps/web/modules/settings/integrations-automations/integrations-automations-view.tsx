@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 
 import { useLocale } from "@calcom/lib/hooks/useLocale";
+import classNames from "@calcom/ui/classNames";
 import { Badge } from "@calcom/ui/components/badge";
 import { Button } from "@calcom/ui/components/button";
 import { Icon } from "@calcom/ui/components/icon";
@@ -11,6 +12,7 @@ import type { IconName } from "@calcom/ui/components/icon";
 import SettingsHeader from "@calcom/features/settings/appDir/SettingsHeader";
 
 type WebhookSummary = { url: string; active: boolean; triggers: string[] };
+type EmailPreview = { title: string; caption: string; html: string };
 
 type Props = {
   googleCalendarConnected: boolean;
@@ -19,6 +21,7 @@ type Props = {
   cronConfigured: boolean;
   recallAiConnected: boolean;
   webhooks: WebhookSummary[];
+  emailPreviews: EmailPreview[];
 };
 
 type StatusCardProps = {
@@ -79,13 +82,45 @@ const StatusCard = ({
 export default function IntegrationsAutomationsView(props: Props) {
   const { t } = useLocale();
   const n8nWebhook = props.webhooks.find((w) => w.triggers.some((trigger) => trigger.startsWith("BOOKING_")));
+  const [tab, setTab] = useState<"status" | "emails">("status");
+
+  const tabButton = (key: "status" | "emails", label: string) => (
+    <button
+      type="button"
+      onClick={() => setTab(key)}
+      className={classNames(
+        "rounded-lg px-3 py-1.5 text-sm font-medium transition",
+        tab === key ? "bg-emphasis text-emphasis" : "text-subtle hover:bg-subtle"
+      )}>
+      {label}
+    </button>
+  );
 
   return (
     <SettingsHeader
       title={t("integrations_automations")}
       description={t("integrations_automations_description")}>
-      <div className="flex flex-col gap-6">
-        <section className="flex flex-col gap-3">
+      <div className="border-subtle mb-6 flex gap-1 rounded-xl border p-1">
+        {tabButton("status", t("status_overview"))}
+        {tabButton("emails", t("email_templates"))}
+      </div>
+      {tab === "emails" ? (
+        <div className="flex flex-col gap-8">
+          {props.emailPreviews.map((preview) => (
+            <div key={preview.title}>
+              <div className="text-emphasis text-sm font-semibold">{preview.title}</div>
+              <p className="text-subtle mb-2 text-sm">{preview.caption}</p>
+              <iframe
+                title={preview.title}
+                srcDoc={preview.html}
+                className="border-subtle h-[520px] w-full rounded-xl border bg-white"
+              />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          <section className="flex flex-col gap-3">
           <h2 className="text-emphasis text-sm font-semibold uppercase tracking-wide">
             {t("integrations")}
           </h2>
@@ -176,7 +211,8 @@ export default function IntegrationsAutomationsView(props: Props) {
             external
           />
         </section>
-      </div>
+        </div>
+      )}
     </SettingsHeader>
   );
 }
