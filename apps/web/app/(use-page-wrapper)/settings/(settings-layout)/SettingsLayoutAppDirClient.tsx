@@ -128,6 +128,18 @@ const getTabs = (
       ],
     },
     {
+      name: "integrations_automations",
+      href: "/settings/integrations-automations",
+      icon: "zap",
+      children: [
+        {
+          name: "status_overview",
+          href: "/settings/integrations-automations",
+          trackingMetadata: { section: "integrations_automations", page: "status_overview" },
+        },
+      ],
+    },
+    {
       name: "organization",
       href: "/settings/organizations",
       children: [
