@@ -29,12 +29,14 @@ const JOBS: ReminderJob[] = [
 ];
 
 async function postHandler(request: NextRequest) {
-  // Accept the key as a raw Authorization header, a "Bearer <key>" header, or an ?apiKey= query param.
+  // Accept the key as a raw Authorization header, a "Bearer <key>" header, or an ?apiKey= query param,
+  // and match against either CRON_API_KEY or CRON_SECRET (both are used across cal.diy cron routes).
   const authHeader = request.headers.get("authorization");
   const headerKey = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
   const apiKey = headerKey || request.nextUrl.searchParams.get("apiKey");
+  const validKeys = [process.env.CRON_API_KEY, process.env.CRON_SECRET].filter(Boolean);
 
-  if (!process.env.CRON_API_KEY || process.env.CRON_API_KEY !== apiKey) {
+  if (validKeys.length === 0 || !apiKey || !validKeys.includes(apiKey)) {
     return NextResponse.json({ message: "Not authenticated" }, { status: 401 });
   }
 
