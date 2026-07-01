@@ -1,6 +1,7 @@
 /* eslint-disable @next/next/no-head-element */
 import BaseTable from "./BaseTable";
 import EmailBodyLogo from "./EmailBodyLogo";
+import EmailBrandHeader from "./EmailBrandHeader";
 import EmailHead from "./EmailHead";
 import EmailScheduledBodyHeaderContent from "./EmailScheduledBodyHeaderContent";
 import EmailSchedulingBodyDivider from "./EmailSchedulingBodyDivider";
@@ -58,6 +59,7 @@ export const BaseEmailHtml = (props: {
               padding: "2px",
               backgroundColor: "#FFFFFF",
             }}>
+            <EmailBrandHeader />
             {props.headerType && (
               <EmailSchedulingBodyHeader headerType={props.headerType} headStyles={{ border: 0 }} />
             )}
