@@ -577,6 +577,19 @@ async function handler(
 
   const emailsAndSmsHandler = new BookingEmailSmsHandler({ logger: tracingLogger });
 
+  // Booking notification emails/SMS are delivered over SMTP, which adds seconds
+  // to the request. The booker doesn't need to wait on delivery to see their
+  // confirmation, so we fire these in the background. The handler methods log
+  // their own failures; this catch covers any that rethrow so we never leak an
+  // unhandled rejection.
+  const sendBookingNotificationsInBackground = (
+    payload: Parameters<typeof emailsAndSmsHandler.send>[0]
+  ) => {
+    void emailsAndSmsHandler.send(payload).catch((error) => {
+      tracingLogger.error("Error sending booking notification emails/SMS", safeStringify(error));
+    });
+  };
+
   try {
     await checkIfBookerEmailIsBlocked({
       loggedInUserId: userId,
@@ -2028,7 +2041,7 @@ async function handler(
     evt.appsStatus = handleAppsStatus(results, booking, reqAppsStatus);
 
     if (!noEmail && isConfirmedByDefault && !isDryRun) {
-      await emailsAndSmsHandler.send({
+      sendBookingNotificationsInBackground({
         action: BookingActionMap.rescheduled,
         data: {
           evt,
@@ -2150,7 +2163,7 @@ async function handler(
       }
       if (!noEmail) {
         if (!isDryRun && !(eventType.seatsPerTimeSlot && rescheduleUid)) {
-          await emailsAndSmsHandler.send({
+          sendBookingNotificationsInBackground({
             action: BookingActionMap.confirmed,
             data: {
               eventType: {
@@ -2194,7 +2207,7 @@ async function handler(
       })
     );
     if (!isDryRun) {
-      await emailsAndSmsHandler.send({
+      sendBookingNotificationsInBackground({
         action: BookingActionMap.requested,
         data: { evt, attendees: attendeesList, eventType, additionalNotes },
       });
