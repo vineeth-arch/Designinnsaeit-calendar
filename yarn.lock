@@ -2998,6 +2998,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@calcom/razorpay@workspace:packages/app-store/razorpay":
+  version: 0.0.0-use.local
+  resolution: "@calcom/razorpay@workspace:packages/app-store/razorpay"
+  dependencies:
+    "@calcom/lib": "workspace:*"
+    "@calcom/types": "workspace:*"
+  languageName: unknown
+  linkType: soft
+
 "@calcom/riverside@workspace:packages/app-store/riverside":
   version: 0.0.0-use.local
   resolution: "@calcom/riverside@workspace:packages/app-store/riverside"

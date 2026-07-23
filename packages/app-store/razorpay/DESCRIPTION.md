@@ -1,0 +1,1 @@
+Accept payments for your bookings via [Razorpay](https://razorpay.com) Payment Links. When a booker schedules a paid event type, Cal.diy generates a Razorpay Payment Link and the booker is redirected to Razorpay's hosted checkout page to complete payment.
