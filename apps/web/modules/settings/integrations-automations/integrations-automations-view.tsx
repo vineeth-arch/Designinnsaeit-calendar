@@ -19,7 +19,6 @@ type Props = {
   googleMeetConnected: boolean;
   emailConfigured: boolean;
   cronConfigured: boolean;
-  recallAiConnected: boolean;
   webhooks: WebhookSummary[];
   emailPreviews: EmailPreview[];
 };
@@ -28,9 +27,9 @@ type StatusCardProps = {
   icon: IconName;
   title: string;
   description: string;
-  connected: boolean;
-  connectedLabel: string;
-  disconnectedLabel: string;
+  connected?: boolean;
+  connectedLabel?: string;
+  disconnectedLabel?: string;
   manageHref?: string;
   external?: boolean;
   children?: React.ReactNode;
@@ -61,9 +60,11 @@ const StatusCard = ({
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-3">
-        <Badge variant={connected ? "success" : "gray"} startIcon={connected ? "check" : "x"}>
-          {connected ? connectedLabel : disconnectedLabel}
-        </Badge>
+        {connectedLabel && disconnectedLabel && (
+          <Badge variant={connected ? "success" : "gray"} startIcon={connected ? "check" : "x"}>
+            {connected ? connectedLabel : disconnectedLabel}
+          </Badge>
+        )}
         {manageHref &&
           (external ? (
             <Button color="secondary" href={manageHref} target="_blank" EndIcon="external-link">
@@ -204,10 +205,7 @@ export default function IntegrationsAutomationsView(props: Props) {
             icon="sparkles"
             title="Recall.ai"
             description={t("recall_ai_description")}
-            connected={props.recallAiConnected}
-            connectedLabel={t("connected")}
-            disconnectedLabel={t("not_connected")}
-            manageHref="https://www.recall.ai"
+            manageHref="https://osaaajii.app.n8n.cloud"
             external
           />
         </section>
