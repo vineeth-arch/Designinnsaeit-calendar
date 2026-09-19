@@ -48,6 +48,7 @@ export type SessionUser = {
   identityProviderId: string | null;
   brandColor: string | null;
   darkBrandColor: string | null;
+  brandLogoUrl: string | null;
   movedToProfileId: number | null;
   completedOnboarding: boolean;
   destinationCalendar: DestinationCalendar | null;
@@ -106,6 +107,7 @@ const userSelect = {
   invitedTo: true,
   brandColor: true,
   darkBrandColor: true,
+  brandLogoUrl: true,
   allowDynamicBooking: true,
   allowSEOIndexing: true,
   receiveMonthlyDigestEmail: true,
@@ -1183,6 +1185,7 @@ export class UserRepository {
         identityProviderId: true,
         brandColor: true,
         darkBrandColor: true,
+        brandLogoUrl: true,
         movedToProfileId: true,
         selectedCalendars: {
           select: {

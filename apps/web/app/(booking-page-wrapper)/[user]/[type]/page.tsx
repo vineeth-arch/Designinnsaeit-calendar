@@ -44,6 +44,8 @@ export const generateMetadata = async ({ params, searchParams }: PageProps): Pro
   const ogTitle = eventData?.length ? `${title} · ${eventData.length} min` : title;
   const meeting = {
     title: ogTitle,
+    brandLogoUrl: eventData?.profile?.brandLogoUrl ?? null,
+    brandColor: eventData?.profile?.darkBrandColor ?? null,
     profile: { name: profileName, image: eventData?.profile.image },
     users:
       eventData?.subsetOfUsers.map((user) => ({

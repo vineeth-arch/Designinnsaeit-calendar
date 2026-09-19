@@ -136,6 +136,7 @@ export const getHandler = async ({ ctx, input }: MeOptions) => {
     identityProviderEmail,
     brandColor: user.brandColor,
     darkBrandColor: user.darkBrandColor,
+    brandLogoUrl: user.brandLogoUrl,
     bio: user.bio,
     weekStart: user.weekStart,
     theme: user.theme,

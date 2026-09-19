@@ -32,8 +32,18 @@ type FrameProps = {
   accent?: string | null;
 };
 
+// Only this app's own /api/avatar/ images may be fetched as a logo; anything else would let a crafted card link make the edge runtime fetch arbitrary URLs.
+function isOwnAvatarUrl(url: string): boolean {
+  try {
+    const u = new URL(url);
+    return u.origin === new URL(WEBAPP_URL).origin && u.pathname.startsWith("/api/avatar/");
+  } catch {
+    return false;
+  }
+}
+
 function BrandFrame({ title, subtitle, minutes, logoUrl, accent }: FrameProps) {
-  const logo = logoUrl && /^https?:\/\//.test(logoUrl) ? logoUrl : `${WEBAPP_URL}/brand/og-logo.png`;
+  const logo = logoUrl && isOwnAvatarUrl(logoUrl) ? logoUrl : `${WEBAPP_URL}/brand/og-logo.png`;
   const mint = accent && HEX_RE.test(accent) ? accent : BRAND.mint;
   return (
     <div style={{ width: 1200, height: 630, display: "flex", background: BRAND.ink, fontFamily: "inter" }}>
@@ -112,6 +122,8 @@ const meetingSchema = z.object({
   usernames: z.string().array(),
   meetingProfileName: z.string(),
   meetingImage: z.string().nullable().optional(),
+  brandLogoUrl: z.string().nullable().optional(),
+  brandColor: z.string().nullable().optional(),
 });
 
 const appSchema = z.object({
@@ -162,19 +174,27 @@ async function handler(req: NextRequest) {
     switch (imageType) {
       case "meeting": {
         try {
-          const { title, meetingProfileName } = meetingSchema.parse({
+          const { title, meetingProfileName, brandLogoUrl, brandColor } = meetingSchema.parse({
             names: searchParams.getAll("names"),
             usernames: searchParams.getAll("usernames"),
             title: searchParams.get("title"),
             meetingProfileName: searchParams.get("meetingProfileName"),
             meetingImage: searchParams.get("meetingImage"),
+            brandLogoUrl: searchParams.get("brandLogoUrl"),
+            brandColor: searchParams.get("brandColor"),
             imageType,
           });
 
           const etag = await getOGImageVersion("meeting");
           const d = splitDuration(title);
           const img = new ImageResponse(
-            <BrandFrame title={d.title} minutes={d.minutes} subtitle={`with ${meetingProfileName}`} />,
+            <BrandFrame
+              title={d.title}
+              minutes={d.minutes}
+              subtitle={`with ${meetingProfileName}`}
+              logoUrl={brandLogoUrl}
+              accent={brandColor}
+            />,
             ogConfig
           );
 

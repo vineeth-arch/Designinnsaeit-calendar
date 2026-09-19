@@ -440,6 +440,7 @@ model User {
   webhooks            Webhook[]
   brandColor          String?
   darkBrandColor      String?
+  brandLogoUrl        String?
   // the location where the events will end up
   destinationCalendar DestinationCalendar?
   // participate in dynamic group booking or not
