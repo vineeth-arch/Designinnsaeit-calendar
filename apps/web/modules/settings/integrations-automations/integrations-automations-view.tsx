@@ -205,7 +205,7 @@ export default function IntegrationsAutomationsView(props: Props) {
             icon="sparkles"
             title="Recall.ai"
             description={t("recall_ai_description")}
-            manageHref="https://handshake.designinnsaeit.com"
+            manageHref="https://osaaajii.app.n8n.cloud"
             external
           />
         </section>
