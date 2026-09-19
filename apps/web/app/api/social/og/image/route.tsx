@@ -3,10 +3,107 @@ import type { NextRequest } from "next/server";
 import type { SatoriOptions } from "satori";
 import { z, ZodError } from "zod";
 
-import { Meeting, App, Generic, getOGImageVersion } from "@calcom/lib/OgImages";
+import { getOGImageVersion } from "@calcom/lib/OgImages";
 import { WEBAPP_URL } from "@calcom/lib/constants";
 
 export const runtime = "edge";
+
+const BRAND = { mint: "#00FFCF", mintMuted: "#9fdccf", indigo: "#2C0098", ink: "#0D0035", text: "#EDEAFB" };
+const eyebrow = {
+  fontFamily: "inter",
+  fontWeight: 500,
+  fontSize: 18,
+  letterSpacing: "0.12em",
+  textTransform: "uppercase" as const,
+};
+const HEX_RE = /^#[0-9a-fA-F]{6}$/;
+const DURATION_RE = / · (\d+) min$/;
+
+function splitDuration(title: string): { title: string; minutes: number | null } {
+  const m = title.match(DURATION_RE);
+  return m ? { title: title.replace(DURATION_RE, ""), minutes: Number(m[1]) } : { title, minutes: null };
+}
+
+type FrameProps = {
+  title: string;
+  subtitle: string;
+  minutes: number | null;
+  logoUrl?: string | null;
+  accent?: string | null;
+};
+
+function BrandFrame({ title, subtitle, minutes, logoUrl, accent }: FrameProps) {
+  const logo = logoUrl && /^https?:\/\//.test(logoUrl) ? logoUrl : `${WEBAPP_URL}/brand/og-logo.png`;
+  const mint = accent && HEX_RE.test(accent) ? accent : BRAND.mint;
+  return (
+    <div style={{ width: 1200, height: 630, display: "flex", background: BRAND.ink, fontFamily: "inter" }}>
+      <div
+        style={{
+          width: 744,
+          height: 630,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "space-between",
+          background: BRAND.indigo,
+          padding: "56px 64px",
+        }}>
+        <img
+          src={logo}
+          width={380}
+          height={90}
+          style={{ objectFit: "contain", objectPosition: "left top" }}
+          alt=""
+        />
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <div style={{ ...eyebrow, color: mint, marginBottom: 20 }}>
+            Brand Strategy & Packaging Design Studio
+          </div>
+          <div
+            style={{
+              fontFamily: "bricolage",
+              fontWeight: 800,
+              fontSize: title.length > 28 ? 64 : 84,
+              lineHeight: 0.95,
+              letterSpacing: "-0.02em",
+              color: BRAND.text,
+              maxWidth: 616,
+            }}>
+            {title}
+          </div>
+        </div>
+        <div style={{ color: BRAND.mintMuted, fontSize: 28, fontWeight: 500 }}>{subtitle}</div>
+      </div>
+      <div
+        style={{
+          width: 456,
+          height: 630,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "flex-end",
+          padding: "56px 64px",
+        }}>
+        {minutes !== null ? (
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div
+              style={{
+                fontFamily: "bricolage",
+                fontWeight: 800,
+                fontSize: 220,
+                lineHeight: 0.9,
+                letterSpacing: "-0.04em",
+                color: mint,
+              }}>
+              {String(minutes)}
+            </div>
+            <div style={{ ...eyebrow, fontSize: 22, color: BRAND.mintMuted, marginTop: 12 }}>minutes</div>
+          </div>
+        ) : (
+          <div style={{ ...eyebrow, fontSize: 22, color: BRAND.mintMuted }}>Design Innsæit</div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const meetingSchema = z.object({
   imageType: z.literal("meeting"),
@@ -37,12 +134,16 @@ async function handler(req: NextRequest) {
 
   try {
     const fontResults = await Promise.allSettled([
-      fetch(new URL("/fonts/cal.ttf", WEBAPP_URL)).then((res) => res.arrayBuffer()),
+      fetch(new URL("/fonts/BricolageGrotesque-ExtraBold.ttf", WEBAPP_URL)).then((res) => res.arrayBuffer()),
       fetch(new URL("/fonts/Inter-Regular.ttf", WEBAPP_URL)).then((res) => res.arrayBuffer()),
       fetch(new URL("/fonts/Inter-Medium.ttf", WEBAPP_URL)).then((res) => res.arrayBuffer()),
     ]);
 
     const fonts: SatoriOptions["fonts"] = [];
+
+    if (fontResults[0].status === "fulfilled") {
+      fonts.push({ name: "bricolage", data: fontResults[0].value, weight: 800 });
+    }
 
     if (fontResults[1].status === "fulfilled") {
       fonts.push({ name: "inter", data: fontResults[1].value, weight: 400 });
@@ -50,11 +151,6 @@ async function handler(req: NextRequest) {
 
     if (fontResults[2].status === "fulfilled") {
       fonts.push({ name: "inter", data: fontResults[2].value, weight: 500 });
-    }
-
-    if (fontResults[0].status === "fulfilled") {
-      fonts.push({ name: "cal", data: fontResults[0].value, weight: 400 });
-      fonts.push({ name: "cal", data: fontResults[0].value, weight: 600 });
     }
 
     const ogConfig = {
@@ -66,7 +162,7 @@ async function handler(req: NextRequest) {
     switch (imageType) {
       case "meeting": {
         try {
-          const { names, usernames, title, meetingProfileName, meetingImage } = meetingSchema.parse({
+          const { title, meetingProfileName } = meetingSchema.parse({
             names: searchParams.getAll("names"),
             usernames: searchParams.getAll("usernames"),
             title: searchParams.get("title"),
@@ -76,12 +172,9 @@ async function handler(req: NextRequest) {
           });
 
           const etag = await getOGImageVersion("meeting");
+          const d = splitDuration(title);
           const img = new ImageResponse(
-            <Meeting
-              title={title}
-              profile={{ name: meetingProfileName, image: meetingImage }}
-              users={names.map((name, index) => ({ name, username: usernames[index] }))}
-            />,
+            <BrandFrame title={d.title} minutes={d.minutes} subtitle={`with ${meetingProfileName}`} />,
             ogConfig
           );
 
@@ -113,7 +206,7 @@ async function handler(req: NextRequest) {
       }
       case "app": {
         try {
-          const { name, description, slug, logoUrl } = appSchema.parse({
+          const { name, description, slug } = appSchema.parse({
             name: searchParams.get("name"),
             description: searchParams.get("description"),
             slug: searchParams.get("slug"),
@@ -128,7 +221,7 @@ async function handler(req: NextRequest) {
 
           const etag = await getOGImageVersion("app", { svgHash });
           const img = new ImageResponse(
-            <App name={name} description={description} slug={slug} logoUrl={logoUrl} />,
+            <BrandFrame title={name} subtitle={description} minutes={null} />,
             ogConfig
           );
 
@@ -167,7 +260,10 @@ async function handler(req: NextRequest) {
           });
 
           const etag = await getOGImageVersion("generic");
-          const img = new ImageResponse(<Generic title={title} description={description} />, ogConfig);
+          const img = new ImageResponse(
+            <BrandFrame title={title} subtitle={description} minutes={null} />,
+            ogConfig
+          );
 
           return new Response(img.body, {
             status: 200,

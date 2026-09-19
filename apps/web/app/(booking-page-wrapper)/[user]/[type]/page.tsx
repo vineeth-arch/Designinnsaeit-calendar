@@ -41,8 +41,9 @@ export const generateMetadata = async ({ params, searchParams }: PageProps): Pro
   const rescheduleUid = booking?.uid;
   const profileName = eventData?.profile?.name ?? "";
   const title = eventData?.title ?? "";
+  const ogTitle = eventData?.length ? `${title} · ${eventData.length} min` : title;
   const meeting = {
-    title,
+    title: ogTitle,
     profile: { name: profileName, image: eventData?.profile.image },
     users:
       eventData?.subsetOfUsers.map((user) => ({
