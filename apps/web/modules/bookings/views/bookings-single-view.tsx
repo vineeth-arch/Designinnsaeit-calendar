@@ -73,6 +73,21 @@ import { BookingQRCode } from "@calcom/web/modules/bookings/components/BookingQR
 import { usePaymentStatus } from "../hooks/usePaymentStatus";
 import type { PageProps } from "./bookings-single-view.getServerSideProps";
 
+// Aspect-independent ticket masks. The old SVG masks stretched to 100% 100%, distorting the scallops
+// and notches whenever the ticket got taller (mobile). Radial gradients keep constant-radius holes.
+const edgeHole = (at: string, size: string, repeat: string, pos: string) =>
+  `radial-gradient(circle 6px at ${at}, #0000 97%, #000) ${pos} / ${size} ${repeat}`;
+const STAMP_MASK = [
+  edgeHole("50% 0", "22px 100%", "round no-repeat", "0 0"),
+  edgeHole("50% 100%", "22px 100%", "round no-repeat", "0 0"),
+  edgeHole("0 50%", "100% 22px", "no-repeat round", "0 0"),
+  edgeHole("100% 50%", "100% 22px", "no-repeat round", "0 0"),
+].join(",");
+const HEADER_MASK = [
+  "radial-gradient(circle 9px at var(--ticket-split) 0, #0000 97%, #000)",
+  "radial-gradient(circle 9px at var(--ticket-split) 100%, #0000 97%, #000)",
+].join(",");
+
 const stringToBoolean = z
   .string()
   .optional()
@@ -562,12 +577,10 @@ export default function Success(props: PageProps) {
                         style={{
                           // Near-white paper in light, lifted indigo in dark — a clearly elevated stamp.
                           background: "var(--cal-stamp)",
-                          WebkitMaskImage: "url(/ticket-stamp.svg)",
-                          maskImage: "url(/ticket-stamp.svg)",
-                          WebkitMaskSize: "100% 100%",
-                          maskSize: "100% 100%",
-                          WebkitMaskRepeat: "no-repeat",
-                          maskRepeat: "no-repeat",
+                          WebkitMask: STAMP_MASK,
+                          mask: STAMP_MASK,
+                          WebkitMaskComposite: "source-in",
+                          maskComposite: "intersect",
                           // Elevated stamp: a directional 135° (down-right) cast + a soft ambient blur,
                           // both following the scalloped mask so it lifts off the page in either mode.
                           filter:
@@ -575,21 +588,19 @@ export default function Success(props: PageProps) {
                         }}>
                         {/* Notched accent header block: label · event name + date (wraps to 2–3 lines) */}
                         <div
-                          className="bg-brand-default text-brand relative mb-7 grid w-full grid-cols-[34%_1fr] items-stretch"
+                          className="bg-brand-default text-brand relative mb-7 grid w-full grid-cols-[var(--ticket-split)_1fr] items-stretch rounded-2xl [--ticket-split:38%] sm:[--ticket-split:34%]"
                           style={{
-                            WebkitMaskImage: "url(/ticket-header.svg)",
-                            maskImage: "url(/ticket-header.svg)",
-                            WebkitMaskSize: "100% 100%",
-                            maskSize: "100% 100%",
-                            WebkitMaskRepeat: "no-repeat",
-                            maskRepeat: "no-repeat",
+                            WebkitMask: HEADER_MASK,
+                            mask: HEADER_MASK,
+                            WebkitMaskComposite: "source-in",
+                            maskComposite: "intersect",
                           }}>
-                          <div className="flex items-center px-6 py-4">
-                            <span className="font-cal text-2xl font-extrabold leading-none sm:text-3xl">
+                          <div className="flex items-center px-4 py-4 sm:px-6">
+                            <span className="font-cal text-xl font-extrabold leading-none sm:text-3xl">
                               {t("ticket_booked")}
                             </span>
                           </div>
-                          <div className="flex min-w-0 flex-col justify-center py-4 pl-5 pr-6">
+                          <div className="flex min-w-0 flex-col justify-center py-4 pl-4 pr-4 sm:pl-5 sm:pr-6">
                             <span className="font-cal line-clamp-3 text-sm font-bold leading-tight sm:text-base">
                               {eventName}
                             </span>
@@ -598,24 +609,23 @@ export default function Success(props: PageProps) {
                             </span>
                           </div>
                         </div>
-                        {/* Big time + styled QR */}
-                        <div className="mb-7 grid grid-cols-2 items-center gap-6">
-                          <p className="text-emphasis font-cal text-center text-6xl font-extrabold leading-none -tracking-[0.04em] sm:text-7xl">
+                        {/* Mobile: stacked rows (time, then QR) each with its caption; sm+: 2 columns + caption row */}
+                        <div className="grid grid-cols-1 items-center gap-x-6 sm:grid-cols-2">
+                          <p className="text-emphasis font-cal order-1 text-center text-6xl font-extrabold leading-none -tracking-[0.04em] sm:mb-7 sm:text-7xl">
                             {date.format(is24h ? "HH:mm" : "h:mma")}
                           </p>
-                          <div className="mx-auto h-36 w-36 sm:h-40 sm:w-40">
-                            <BookingQRCode
-                              value={`${WEBAPP_URL}/booking/${bookingInfo.uid}`}
-                              centerBg="var(--cal-stamp)"
-                            />
-                          </div>
-                        </div>
-                        {/* Perforation + captions, centered under the time and the QR */}
-                        <div className="border-default grid grid-cols-2 border-t border-dashed pt-3">
-                          <span className="text-brand-default text-center text-xs font-semibold">
+                          <span className="text-brand-default order-2 mb-6 mt-3 text-center text-xs font-semibold sm:order-3 sm:mb-0 sm:mt-0 sm:border-t sm:border-dashed sm:border-[var(--cal-border)] sm:pt-3">
                             {t("appointment_time")}
                           </span>
-                          <span className="text-brand-default text-center text-xs font-semibold">
+                          <div className="border-default order-3 border-t border-dashed pt-6 sm:order-2 sm:mb-7 sm:border-0 sm:pt-0">
+                            <div className="mx-auto h-40 w-40">
+                              <BookingQRCode
+                                value={`${WEBAPP_URL}/booking/${bookingInfo.uid}`}
+                                centerBg="var(--cal-stamp)"
+                              />
+                            </div>
+                          </div>
+                          <span className="text-brand-default order-4 mt-3 text-center text-xs font-semibold sm:border-t sm:border-dashed sm:border-[var(--cal-border)] sm:pt-3">
                             {t("scan_for_details")}
                           </span>
                         </div>
