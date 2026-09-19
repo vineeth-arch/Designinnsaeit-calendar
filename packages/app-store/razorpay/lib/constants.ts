@@ -7,6 +7,8 @@ export const RAZORPAY_API_BASE = "https://api.razorpay.com/v1";
 export interface RazorpayServerCredentials {
   keyId: string;
   keySecret: string;
+  // Razorpay signs webhooks with the secret set on the webhook in its dashboard, which can differ from the API key secret.
+  webhookSecret: string;
 }
 
 /**
@@ -23,5 +25,5 @@ export function getRazorpayServerCredentials(): RazorpayServerCredentials {
       "Razorpay: RAZORPAY_KEY_ID/RAZORPAY_KEY_SECRET are not configured on the server"
     );
   }
-  return { keyId, keySecret };
+  return { keyId, keySecret, webhookSecret: process.env.RAZORPAY_WEBHOOK_SECRET || keySecret };
 }

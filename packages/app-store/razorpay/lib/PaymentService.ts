@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { WEBAPP_URL } from "@calcom/lib/constants";
 import { ErrorCode } from "@calcom/lib/errorCodes";
 import { ErrorWithCode } from "@calcom/lib/errors";
@@ -7,7 +8,6 @@ import prisma from "@calcom/prisma";
 import type { Booking, Payment, PaymentOption, Prisma } from "@calcom/prisma/client";
 import type { CalendarEvent } from "@calcom/types/Calendar";
 import type { IAbstractPaymentService } from "@calcom/types/PaymentService";
-import { v4 as uuidv4 } from "uuid";
 import type z from "zod";
 import { appKeysSchema } from "../zod";
 import { getRazorpayServerCredentials, RAZORPAY_API_BASE } from "./constants";
@@ -54,10 +54,11 @@ class RazorpayPaymentService implements IAbstractPaymentService {
       }
 
       const { keyId, keySecret } = getRazorpayServerCredentials();
-      const uid = uuidv4();
+      const uid = randomUUID();
 
       const response = await fetch(`${RAZORPAY_API_BASE}/payment_links`, {
         method: "POST",
+        signal: AbortSignal.timeout(10_000),
         headers: {
           "Content-Type": "application/json",
           Authorization: `Basic ${Buffer.from(`${keyId}:${keySecret}`).toString("base64")}`,
@@ -74,8 +75,9 @@ class RazorpayPaymentService implements IAbstractPaymentService {
             email: bookerEmail,
             contact: bookerPhoneNumber || undefined,
           },
+          // Email only: the phone number is booker-supplied, and Razorpay would text whatever number is typed in.
           notify: {
-            sms: !!bookerPhoneNumber,
+            sms: false,
             email: true,
           },
           reference_id: uid,
@@ -129,8 +131,11 @@ class RazorpayPaymentService implements IAbstractPaymentService {
     throw new Error("Method not implemented.");
   }
 
-  async refund(): Promise<Payment | null> {
-    throw new Error("Method not implemented.");
+  // Payment Links are refunded per underlying payment; not automated yet. Returning null (instead of throwing)
+  // keeps the reject/cancel flows working, which call this without guarding it.
+  async refund(paymentId: Payment["id"]): Promise<Payment | null> {
+    log.warn(`Razorpay: automatic refunds are not supported; refund payment ${paymentId} from the Razorpay dashboard`);
+    return null;
   }
 
   async collectCard(): Promise<Payment> {
