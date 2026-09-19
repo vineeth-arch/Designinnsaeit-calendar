@@ -1,5 +1,7 @@
 # Webhooks API Reference
 
+> Generic upstream reference, and partly wrong for this fork: the signature is bare hex (no `sha256=` prefix) and some trigger names below do not exist (`BOOKING_PAID` and `BOOKING_NO_SHOW_UPDATED` do; `BOOKING_CONFIRMED` and `BOOKING_COMPLETED` do not). For this deployment's real contract see `/WEBHOOKS.md`.
+
 Detailed documentation for webhook management endpoints in the Cal.diy API v2.
 
 ## Endpoints Overview
