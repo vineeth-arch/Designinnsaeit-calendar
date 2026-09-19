@@ -2747,6 +2747,8 @@
   "hold": "Hold",
   "on_booking_option": "Collect payment on booking",
   "hold_option": "Charge no-show fee",
+  "razorpay_event_type_app_card_description": "Accept payments via Razorpay Payment Links",
+  "pay_with_razorpay": "Pay with Razorpay",
   "card_held": "Card held",
   "charge_card": "Charge card",
   "card_charged": "Card charged",
