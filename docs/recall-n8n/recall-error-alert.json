@@ -1,0 +1,73 @@
+{
+  "name": "Recall.ai automation error alert",
+  "nodes": [
+    {
+      "id": "aae17b50-bebc-20fb-e040-4340a77873f2",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "8851142d-a56f-d885-ce66-8a165b33fee7",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Edit after import: any URL that accepts a POST body, for example an ntfy topic URL.\nreturn [{ json: { alertUrl: 'https://ntfy.sh/CHANGE-ME' } }];\n"
+      }
+    },
+    {
+      "id": "fa13ca8c-1e61-ffec-0041-4bf256220027",
+      "name": "Send alert",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.alertUrl }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: 'n8n workflow failed: ' + $('Error Trigger').first().json.workflow.name + ' - ' + (($('Error Trigger').first().json.execution || {}).error || {}).message }) }}"
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Send alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

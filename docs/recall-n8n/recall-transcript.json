@@ -1,0 +1,227 @@
+{
+  "name": "Recall.ai transcript to Handshake",
+  "nodes": [
+    {
+      "id": "3b2d85ee-0a9f-8eb9-e774-770f016221e2",
+      "name": "Recall webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "recall-done-CHANGE-ME",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "notes": "Change the path to a long random string. In Recall.ai: Webhooks > add endpoint = production URL + ?token=<Config token>, event bot.done.",
+      "notesInFlow": true
+    },
+    {
+      "id": "8851142d-a56f-d885-ce66-8a165b33fee7",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Edit these values in n8n after importing.\nconst cfg = {\n  recallWebhookToken: 'PASTE_A_RANDOM_TOKEN',     // also add ?token=<this> to the endpoint URL in the Recall.ai dashboard\n  recallBaseUrl: 'https://us-east-1.recall.ai',    // same region URL as in the booking workflow\n  handshakeRecordingsUrl: 'https://handshake.designinnsaeit.com/api/recordings',\n};\nconst item = $input.first();\nreturn [{ json: { ...item.json, ...cfg }, binary: item.binary }];\n"
+      }
+    },
+    {
+      "id": "4e24cb88-2bba-e665-706f-a8cc04aae209",
+      "name": "Only bot.done",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const cfg = $('Config').first().json;\nconst hook = $input.first().json;\nif (!cfg.recallWebhookToken || cfg.recallWebhookToken.startsWith('PASTE_')) throw new Error('Config node: set recallWebhookToken first');\nif ((hook.query || {}).token !== cfg.recallWebhookToken) throw new Error('Bad token on the Recall webhook, ignoring request');\n\nconst body = hook.body || {};\nif (body.event !== 'bot.done') return [];\nconst bot = (body.data || {}).bot || {};\nreturn [{ json: { botId: bot.id, metadata: bot.metadata || {} } }];\n"
+      }
+    },
+    {
+      "id": "b687598b-73b8-8bae-57df-457687d91951",
+      "name": "Get bot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        200
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $('Config').first().json.recallBaseUrl }}/api/v1/bot/{{ $json.botId }}/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Recall API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "05099650-63b7-8ceb-0ee9-51312da74d4f",
+      "name": "Find transcript URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const bot = $input.first().json;\nconst rec = (bot.recordings || [])[0];\nconst url = rec && rec.media_shortcuts && rec.media_shortcuts.transcript && rec.media_shortcuts.transcript.data && rec.media_shortcuts.transcript.data.download_url;\nif (!url) throw new Error('No transcript yet for bot ' + bot.id + ', re-run this execution in a few minutes');\nconst meta = $('Only bot.done').first().json.metadata;\nreturn [{ json: { url, botId: bot.id, title: meta.title, startTime: meta.startTime } }];\n"
+      }
+    },
+    {
+      "id": "c29d4c12-e4fb-1145-3afc-dfab4736c0bb",
+      "name": "Download transcript",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        200
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.url }}"
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "3ff42968-86f8-84f9-1e69-a80426001eed",
+      "name": "Format transcript",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const prev = $('Find transcript URL').first().json;\nconst segments = $input.all().map((i) => i.json);\nconst lines = [];\nlet last = null;\nlet lastEnd = 0;\nfor (const s of segments) {\n  const name = (s.participant && s.participant.name) || 'Speaker';\n  const words = s.words || [];\n  const text = words.map((w) => w.text).join(' ').trim();\n  if (!text) continue;\n  const end = words.length ? (words[words.length - 1].end_timestamp || {}).relative || 0 : 0;\n  if (end > lastEnd) lastEnd = end;\n  if (name === last) lines[lines.length - 1] += ' ' + text;\n  else lines.push(name + ': ' + text);\n  last = name;\n}\nif (!lines.length) throw new Error('Transcript for bot ' + prev.botId + ' was empty');\nreturn [{ json: {\n  clientRef: 'recall:' + prev.botId,\n  source: 'recall',\n  transcriptSource: 'recall',\n  title: prev.title || 'Recall meeting',\n  transcript: lines.join('\\n'),\n  recordedAt: prev.startTime,\n  durationSec: lastEnd ? Math.round(lastEnd) : undefined,\n} }];\n"
+      }
+    },
+    {
+      "id": "93bf8332-e4c8-668f-0e42-70c56316c903",
+      "name": "Send to Handshake",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1680,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Config').first().json.handshakeRecordingsUrl }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Handshake Worker"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    }
+  ],
+  "connections": {
+    "Recall webhook": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Only bot.done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only bot.done": {
+      "main": [
+        [
+          {
+            "node": "Get bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get bot": {
+      "main": [
+        [
+          {
+            "node": "Find transcript URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find transcript URL": {
+      "main": [
+        [
+          {
+            "node": "Download transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download transcript": {
+      "main": [
+        [
+          {
+            "node": "Format transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format transcript": {
+      "main": [
+        [
+          {
+            "node": "Send to Handshake",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

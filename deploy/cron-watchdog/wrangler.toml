@@ -1,0 +1,20 @@
+name = "designinnsaeit-cron-watchdog"
+main = "worker.js"
+compatibility_date = "2026-09-19"
+
+[triggers]
+crons = ["* * * * *"]
+
+# Create with: npx wrangler kv namespace create STATE, then paste the id here (the id is not secret).
+[[kv_namespaces]]
+binding = "STATE"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[vars]
+APP_URL = "https://appointments.designinnsaeit.com"
+STALE_AFTER_MIN = "10"
+
+# Secrets are never in this file. Set them with `npx wrangler secret put <NAME>`:
+#   CRON_API_KEY     same value as the CRON_API_KEY env var on the Railway `web` service
+#   HEARTBEAT_TOKEN  long random string; goes in the cron-job.org heartbeat URL
+#   ALERT_URL        optional; a URL that accepts a POST body, e.g. an ntfy topic

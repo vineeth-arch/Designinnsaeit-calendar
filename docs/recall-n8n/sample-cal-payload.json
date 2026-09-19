@@ -1,0 +1,16 @@
+{
+  "triggerEvent": "BOOKING_CREATED",
+  "createdAt": "2026-09-20T05:00:00.000Z",
+  "payload": {
+    "uid": "sample-booking-uid-1",
+    "title": "Sample notetaker test",
+    "type": "15min",
+    "startTime": "2026-09-20T12:00:00.000Z",
+    "endTime": "2026-09-20T12:15:00.000Z",
+    "status": "ACCEPTED",
+    "location": "https://meet.google.com/REPLACE-WITH-A-MEET-YOU-OWN",
+    "videoCallData": { "url": "https://meet.google.com/REPLACE-WITH-A-MEET-YOU-OWN" },
+    "attendees": [{ "name": "Test Person", "email": "test@example.com", "timeZone": "Asia/Kolkata" }],
+    "organizer": { "name": "Host", "email": "host@example.com", "timeZone": "Asia/Kolkata" }
+  }
+}

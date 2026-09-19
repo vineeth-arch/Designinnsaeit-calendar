@@ -1,0 +1,447 @@
+{
+  "name": "Cal.diy booking to Recall.ai bot",
+  "nodes": [
+    {
+      "id": "de7a86de-b0dd-5ea2-604e-8590fde9e4a8",
+      "name": "Cal webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "cal-recall-CHANGE-ME",
+        "responseMode": "onReceived",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "notes": "Change the path to a long random string. Use the PRODUCTION url as the Cal.diy webhook subscriber.",
+      "notesInFlow": true
+    },
+    {
+      "id": "33cb1413-0eb2-c8c9-2ae7-b66b530a7021",
+      "name": "Daily check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        340
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "notes": "Runs at 06:00 in the workflow timezone (Asia/Kolkata) and repairs any missed webhook.",
+      "notesInFlow": true
+    },
+    {
+      "id": "8851142d-a56f-d885-ce66-8a165b33fee7",
+      "name": "Config",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Edit these values in n8n after importing. Nothing here is committed with real values.\nconst cfg = {\n  calWebhookSecret: 'PASTE_THE_SECRET_YOU_SET_ON_THE_CAL_WEBHOOK',\n  recallBaseUrl: 'https://us-east-1.recall.ai',            // region URL shown in the Recall.ai dashboard\n  botName: 'Design Innsaeit Notetaker',\n  calApiBase: 'https://designinnsaeit-calendar-production.up.railway.app/api/v2',\n};\n// Pass the trigger's item through untouched (the signature check needs its raw body).\nconst item = $input.first();\nreturn [{ json: { ...item.json, ...cfg }, binary: item.binary }];\n"
+      },
+      "notes": "Edit the values here after import.",
+      "notesInFlow": true
+    },
+    {
+      "id": "8b23e5d4-cc7e-4c22-a3c7-0f7de6221260",
+      "name": "Which trigger?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        480,
+        200
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ $('Cal webhook').isExecuted ? 0 : 1 }}"
+      }
+    },
+    {
+      "id": "31d955a4-edff-7cf1-bfe0-34abe451e98c",
+      "name": "Plan from webhook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        200
+      ],
+      "parameters": {
+        "jsCode": "// Pure-JS SHA-256 and HMAC, pasted into the n8n Code nodes so signature checks work on any n8n plan\n// (n8n Cloud may not allow require('crypto')). Verified against node:crypto in hmac-sha256.test.mjs.\nconst SHA256_K = [\n  0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,\n  0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,\n  0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,\n  0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,\n  0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,\n  0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,\n  0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,\n  0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,\n];\n\nfunction sha256(msg) {\n  const H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];\n  const len = msg.length;\n  const padded = new Uint8Array(((len + 9 + 63) >> 6) << 6);\n  padded.set(msg);\n  padded[len] = 0x80;\n  const view = new DataView(padded.buffer);\n  view.setUint32(padded.length - 8, Math.floor((len * 8) / 0x100000000));\n  view.setUint32(padded.length - 4, (len * 8) >>> 0);\n  const w = new Uint32Array(64);\n  for (let off = 0; off < padded.length; off += 64) {\n    for (let i = 0; i < 16; i++) w[i] = view.getUint32(off + i * 4);\n    for (let i = 16; i < 64; i++) {\n      const a = w[i - 15];\n      const b = w[i - 2];\n      const s0 = ((a >>> 7) | (a << 25)) ^ ((a >>> 18) | (a << 14)) ^ (a >>> 3);\n      const s1 = ((b >>> 17) | (b << 15)) ^ ((b >>> 19) | (b << 13)) ^ (b >>> 10);\n      w[i] = (w[i - 16] + s0 + w[i - 7] + s1) >>> 0;\n    }\n    let [a, b, c, d, e, f, g, h] = H;\n    for (let i = 0; i < 64; i++) {\n      const S1 = ((e >>> 6) | (e << 26)) ^ ((e >>> 11) | (e << 21)) ^ ((e >>> 25) | (e << 7));\n      const ch = (e & f) ^ (~e & g);\n      const t1 = (h + S1 + ch + SHA256_K[i] + w[i]) >>> 0;\n      const S0 = ((a >>> 2) | (a << 30)) ^ ((a >>> 13) | (a << 19)) ^ ((a >>> 22) | (a << 10));\n      const maj = (a & b) ^ (a & c) ^ (b & c);\n      const t2 = (S0 + maj) >>> 0;\n      h = g;\n      g = f;\n      f = e;\n      e = (d + t1) >>> 0;\n      d = c;\n      c = b;\n      b = a;\n      a = (t1 + t2) >>> 0;\n    }\n    H[0] = (H[0] + a) >>> 0;\n    H[1] = (H[1] + b) >>> 0;\n    H[2] = (H[2] + c) >>> 0;\n    H[3] = (H[3] + d) >>> 0;\n    H[4] = (H[4] + e) >>> 0;\n    H[5] = (H[5] + f) >>> 0;\n    H[6] = (H[6] + g) >>> 0;\n    H[7] = (H[7] + h) >>> 0;\n  }\n  const out = new Uint8Array(32);\n  const outView = new DataView(out.buffer);\n  H.forEach((v, i) => outView.setUint32(i * 4, v));\n  return out;\n}\n\nfunction hmacSha256Hex(key, msg) {\n  let k = typeof key === 'string' ? new TextEncoder().encode(key) : key;\n  if (k.length > 64) k = sha256(k);\n  const inner = new Uint8Array(64 + msg.length);\n  const outer = new Uint8Array(64 + 32);\n  for (let i = 0; i < 64; i++) {\n    const byte = k[i] || 0;\n    inner[i] = byte ^ 0x36;\n    outer[i] = byte ^ 0x5c;\n  }\n  inner.set(msg, 64);\n  outer.set(sha256(inner), 64);\n  return Array.from(sha256(outer), (x) => x.toString(16).padStart(2, '0')).join('');\n}\n\nfunction timingSafeEqualStr(a, b) {\n  if (a.length !== b.length) return false;\n  let diff = 0;\n  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);\n  return diff === 0;\n}\n\nconst pickUrl = (p) =>\n  [p.videoCallData && p.videoCallData.url, p.metadata && p.metadata.videoCallUrl, p.meetingUrl, p.location]\n    .find((u) => typeof u === 'string' && /^https?:\\/\\//.test(u));\n// Recall only guarantees a scheduled join when join_at is 10+ minutes ahead; sooner means \"join now\".\nconst joinAtFor = (startIso) => (Date.parse(startIso) - Date.now() >= 10 * 60 * 1000 ? new Date(startIso).toISOString() : undefined);\n\nconst cfg = $('Config').first().json;\nconst item = $input.first();\nconst raw = await this.helpers.getBinaryDataBuffer(0, 'data');\n\nif (!cfg.calWebhookSecret || cfg.calWebhookSecret.startsWith('PASTE_')) {\n  throw new Error('Config node: set calWebhookSecret first');\n}\nconst expected = hmacSha256Hex(cfg.calWebhookSecret, raw);\nconst given = String((item.json.headers || {})['x-cal-signature-256'] || '');\nif (!timingSafeEqualStr(expected, given)) throw new Error('Invalid x-cal-signature-256, ignoring request');\n\nconst body = JSON.parse(new TextDecoder().decode(raw));\nconst p = body.payload || {};\nconst event = body.triggerEvent;\nconst store = $getWorkflowStaticData('global');\nstore.bots = store.bots || {};\n\nconst base = { recallBaseUrl: cfg.recallBaseUrl, botName: cfg.botName };\nconst out = [];\nif (event === 'BOOKING_CREATED' || event === 'BOOKING_RESCHEDULED') {\n  // cal.diy mints a new uid on reschedule, so the old booking's bot is removed and the new one created.\n  const old = p.rescheduleUid && store.bots[p.rescheduleUid];\n  if (old) out.push({ json: { ...base, action: 'delete', uid: p.rescheduleUid, botId: old.botId } });\n  const url = pickUrl(p);\n  if (p.status === 'ACCEPTED' && url && !store.bots[p.uid]) {\n    out.push({ json: { ...base, action: 'create', uid: p.uid, meetingUrl: url, joinAt: joinAtFor(p.startTime), title: p.title, startTime: p.startTime, endTime: p.endTime } });\n  }\n} else if (event === 'BOOKING_CANCELLED') {\n  const entry = store.bots[p.uid];\n  if (entry) out.push({ json: { ...base, action: 'delete', uid: p.uid, botId: entry.botId } });\n}\nreturn out;\n"
+      }
+    },
+    {
+      "id": "b6d6b35c-33d8-4f3e-8d87-7b528b7b6040",
+      "name": "List Cal bookings",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        340
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.calApiBase }}/bookings?status=upcoming,cancelled&take=100&afterStart={{ $now.minus({ days: 1 }).toISO() }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "cal-api-version",
+              "value": "2024-08-13"
+            }
+          ]
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Cal API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ff7a0f4a-c841-ac48-6922-0bcd0e503a80",
+      "name": "Plan from Cal bookings",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const pickUrl = (p) =>\n  [p.videoCallData && p.videoCallData.url, p.metadata && p.metadata.videoCallUrl, p.meetingUrl, p.location]\n    .find((u) => typeof u === 'string' && /^https?:\\/\\//.test(u));\n// Recall only guarantees a scheduled join when join_at is 10+ minutes ahead; sooner means \"join now\".\nconst joinAtFor = (startIso) => (Date.parse(startIso) - Date.now() >= 10 * 60 * 1000 ? new Date(startIso).toISOString() : undefined);\n\nconst cfg = $('Config').first().json;\nconst store = $getWorkflowStaticData('global');\nstore.bots = store.bots || {};\nconst bookings = ($input.first().json.data || []);\nconst now = Date.now();\nconst base = { recallBaseUrl: cfg.recallBaseUrl, botName: cfg.botName };\nconst out = [];\nconst seen = {};\n\nfor (const b of bookings) {\n  seen[b.uid] = b;\n  const url = pickUrl(b);\n  if (b.status === 'accepted' && url && Date.parse(b.end) > now && !store.bots[b.uid]) {\n    out.push({ json: { ...base, action: 'create', uid: b.uid, meetingUrl: url, joinAt: joinAtFor(b.start), title: b.title, startTime: b.start, endTime: b.end } });\n  }\n}\nfor (const [uid, entry] of Object.entries(store.bots)) {\n  const b = seen[uid];\n  // Only remove when Cal says the booking is no longer live; a booking outside the query window is left alone.\n  if (b && b.status !== 'accepted') out.push({ json: { ...base, action: 'delete', uid, botId: entry.botId } });\n  // Forget finished meetings so the map cannot grow without bound.\n  else if (entry.end && Date.parse(entry.end) < now - 24 * 60 * 60 * 1000) delete store.bots[uid];\n}\nreturn out;\n"
+      }
+    },
+    {
+      "id": "b49a5701-36ac-bb40-d2a2-ff868f78fc05",
+      "name": "Route action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1200,
+        200
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ ['create', 'delete'].indexOf($json.action) }}"
+      }
+    },
+    {
+      "id": "6c1b94db-6b70-2499-51bc-44ffde6dbc4b",
+      "name": "Create Recall bot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.recallBaseUrl }}/api/v1/bot/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ meeting_url: $json.meetingUrl, bot_name: $json.botName, join_at: $json.joinAt, metadata: { calUid: $json.uid, title: $json.title, startTime: $json.startTime }, recording_config: { transcript: { provider: { recallai_streaming: {} } } } }) }}"
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Recall API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "2b4c0d91-77d1-1f0f-d466-ee741aa8cf8e",
+      "name": "Remember bot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const plan = $('Route action').item.json;\nconst store = $getWorkflowStaticData('global');\nstore.bots = store.bots || {};\nstore.bots[plan.uid] = { botId: $input.first().json.id, end: plan.endTime };\nreturn [{ json: { uid: plan.uid, botId: store.bots[plan.uid].botId } }];\n"
+      }
+    },
+    {
+      "id": "d1d84c0e-1bde-b4e1-3212-f9eb6b7e995c",
+      "name": "Delete Recall bot",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        340
+      ],
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $json.recallBaseUrl }}/api/v1/bot/{{ $json.botId }}/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Recall API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "233bfb7f-cddc-c08d-0d1a-61eee89d1e5c",
+      "name": "Removed or already gone?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        1680,
+        340
+      ],
+      "parameters": {
+        "mode": "expression",
+        "numberOutputs": 2,
+        "output": "={{ ($json.statusCode >= 200 && $json.statusCode < 300) || $json.statusCode === 404 ? 0 : 1 }}"
+      }
+    },
+    {
+      "id": "03027b52-3dba-7d29-9479-7f8cd9835fbd",
+      "name": "Tell bot to leave call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1920,
+        200
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Route action').item.json.recallBaseUrl }}/api/v1/bot/{{ $('Route action').item.json.botId }}/leave_call/",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Recall API"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000
+    },
+    {
+      "id": "ace1609e-f89f-79f9-c910-f84a55407acb",
+      "name": "Forget bot",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        200
+      ],
+      "parameters": {
+        "jsCode": "const plan = $('Route action').item.json;\nconst store = $getWorkflowStaticData('global');\nif (store.bots) delete store.bots[plan.uid];\nreturn [{ json: { uid: plan.uid, removed: true } }];\n"
+      }
+    }
+  ],
+  "connections": {
+    "Cal webhook": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily check": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Which trigger?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Which trigger?": {
+      "main": [
+        [
+          {
+            "node": "Plan from webhook",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "List Cal bookings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List Cal bookings": {
+      "main": [
+        [
+          {
+            "node": "Plan from Cal bookings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan from webhook": {
+      "main": [
+        [
+          {
+            "node": "Route action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Plan from Cal bookings": {
+      "main": [
+        [
+          {
+            "node": "Route action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route action": {
+      "main": [
+        [
+          {
+            "node": "Create Recall bot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete Recall bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Recall bot": {
+      "main": [
+        [
+          {
+            "node": "Remember bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Recall bot": {
+      "main": [
+        [
+          {
+            "node": "Removed or already gone?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Removed or already gone?": {
+      "main": [
+        [
+          {
+            "node": "Forget bot",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Tell bot to leave call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tell bot to leave call": {
+      "main": [
+        [
+          {
+            "node": "Forget bot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Kolkata"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "designinnsaeit-cron-watchdog",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test"
+  }
+}
