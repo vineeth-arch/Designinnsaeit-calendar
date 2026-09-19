@@ -29,7 +29,7 @@ import { isWithinMinimumRescheduleNotice as isWithinMinimumRescheduleNoticeUtil 
 import type { nameObjectSchema } from "@calcom/features/eventtypes/lib/eventNaming";
 import { getEventName } from "@calcom/features/eventtypes/lib/eventNaming";
 import { shouldShowFieldInCustomResponses } from "@calcom/lib/bookings/SystemField";
-import { APP_NAME, WEBAPP_URL } from "@calcom/lib/constants";
+import { APP_NAME } from "@calcom/lib/constants";
 import { formatToLocalizedDate, formatToLocalizedTime, formatToLocalizedTimezone } from "@calcom/lib/dayjs";
 import useGetBrandingColours from "@calcom/lib/getBrandColours";
 import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
@@ -68,7 +68,7 @@ import CancelBooking from "@calcom/web/components/booking/CancelBooking";
 import EventReservationSchema from "@calcom/web/components/schemas/EventReservationSchema";
 import { timeZone } from "@calcom/web/lib/clock";
 
-import { BookingQRCode } from "@calcom/web/modules/bookings/components/BookingQRCode";
+import { getCountdown } from "@calcom/web/modules/bookings/lib/formatCountdown";
 
 import { usePaymentStatus } from "../hooks/usePaymentStatus";
 import type { PageProps } from "./bookings-single-view.getServerSideProps";
@@ -442,6 +442,45 @@ export default function Success(props: PageProps) {
         eventType?.minimumRescheduleNotice ?? null
       );
   const isRescheduleDisabled = !canReschedule || isWithinMinimumRescheduleNotice;
+
+  // Rendered only after mount: Date.now() differs between server and client and would break hydration.
+  const [msUntilStart, setMsUntilStart] = useState<number | null>(null);
+  useEffect(() => {
+    const startMs = new Date(bookingInfo.startTime).getTime();
+    const tick = () => setMsUntilStart(startMs - Date.now());
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, [bookingInfo.startTime]);
+  const countdown = msUntilStart === null ? null : getCountdown(msUntilStart);
+  const countdownLabel = !countdown
+    ? null
+    : countdown.kind === "now"
+      ? t("ticket_starts_now")
+      : countdown.kind === "minutes"
+        ? t("ticket_starts_in_minutes", { minutes: countdown.minutes })
+        : countdown.kind === "hours"
+          ? t("ticket_starts_in_hours", { hours: countdown.hours, minutes: countdown.minutes })
+          : t("ticket_starts_in_days", { days: countdown.days, hours: countdown.hours });
+
+  const ticketJoinUrl =
+    shareableMeetingUrl && /^https?:\/\//i.test(shareableMeetingUrl) ? shareableMeetingUrl : null;
+  const ticketCalendarLink = googleCalendarLink ?? icsLink;
+  // Mirrors the gating of the action bar below the ticket so the shortcuts can never diverge from it.
+  const canManageBooking =
+    !requiresLoginToUpdate &&
+    (!needsConfirmation || !userIsOwner) &&
+    isReschedulable &&
+    !isRerouting &&
+    canCancelOrReschedule &&
+    !isCancellationMode;
+  const showTicketReschedule =
+    canManageBooking &&
+    !props.recurringBookings &&
+    (!isBookingInPast || eventType.allowReschedulingPastBookings) &&
+    canReschedule &&
+    !isRescheduleDisabled;
+  const showTicketCancel = canManageBooking && !isBookingInPast && canCancel;
   const paymentStatusMessage = usePaymentStatus({
     bookingStatus: bookingInfo.status,
     startTime: bookingInfo.startTime,
@@ -617,16 +656,73 @@ export default function Success(props: PageProps) {
                           <span className="text-brand-default order-2 mb-6 mt-3 text-center text-xs font-semibold sm:order-3 sm:mb-0 sm:mt-0 sm:border-t sm:border-dashed sm:border-[var(--cal-border)] sm:pt-3">
                             {t("appointment_time")}
                           </span>
-                          <div className="border-default order-3 border-t border-dashed pt-6 sm:order-2 sm:mb-7 sm:border-0 sm:pt-0">
-                            <div className="mx-auto h-40 w-40">
-                              <BookingQRCode
-                                value={`${WEBAPP_URL}/booking/${bookingInfo.uid}`}
-                                centerBg="var(--cal-stamp)"
-                              />
+                          <div className="border-default order-3 flex min-w-0 flex-col items-center gap-3 border-t border-dashed pt-6 sm:order-2 sm:mb-7 sm:border-0 sm:pt-0">
+                            {countdownLabel && (
+                              <span
+                                data-testid="ticket-countdown"
+                                className="text-brand-default border-default rounded-full border px-3 py-1 text-xs font-semibold">
+                                {countdownLabel}
+                              </span>
+                            )}
+                            {ticketJoinUrl && (
+                              <a
+                                data-testid="ticket-join"
+                                href={ticketJoinUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="bg-brand-default text-brand inline-flex w-full max-w-[16rem] items-center justify-center rounded-lg px-5 py-3 text-sm font-bold transition hover:opacity-90">
+                                {t("join_meeting")}
+                              </a>
+                            )}
+                            <div className="text-emphasis flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-semibold">
+                              {ticketJoinUrl && (
+                                <button
+                                  type="button"
+                                  data-testid="ticket-copy-link"
+                                  className="underline underline-offset-2"
+                                  onClick={async () => {
+                                    try {
+                                      await navigator.clipboard.writeText(ticketJoinUrl);
+                                      showToast(t("link_copied"), "success");
+                                    } catch {
+                                      showToast(t("something_went_wrong"), "error");
+                                    }
+                                  }}>
+                                  {t("copy_meeting_link")}
+                                </button>
+                              )}
+                              {ticketCalendarLink && (
+                                <a
+                                  href={ticketCalendarLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="underline underline-offset-2">
+                                  {t("add_to_calendar")}
+                                </a>
+                              )}
+                              {showTicketReschedule && (
+                                <Link
+                                  href={`/reschedule/${seatReferenceUid || bookingInfo?.uid}${
+                                    currentUserEmail
+                                      ? `?rescheduledBy=${encodeURIComponent(currentUserEmail)}`
+                                      : ""
+                                  }`}
+                                  className="underline underline-offset-2">
+                                  {t("reschedule")}
+                                </Link>
+                              )}
+                              {showTicketCancel && (
+                                <button
+                                  type="button"
+                                  className="underline underline-offset-2"
+                                  onClick={() => setIsCancellationMode(true)}>
+                                  {t("cancel")}
+                                </button>
+                              )}
                             </div>
                           </div>
                           <span className="text-brand-default order-4 mt-3 text-center text-xs font-semibold sm:border-t sm:border-dashed sm:border-[var(--cal-border)] sm:pt-3">
-                            {t("scan_for_details")}
+                            {t("ticket_join_caption")}
                           </span>
                         </div>
                       </div>
