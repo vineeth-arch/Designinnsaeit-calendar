@@ -177,7 +177,10 @@ export const TicketEmailHtml = (props: {
         <Table bg={C.page} data-ticket="1">
           <tr>
             <td align="center" style={{ padding: "32px 12px" }}>
-              <Table style={{ maxWidth: 600 }} width={600}>
+              <RawHtml
+                html={`<!--[if mso]><table role="presentation" width="600" align="center" cellpadding="0" cellspacing="0" border="0"><tr><td><![endif]-->`}
+              />
+              <Table style={{ maxWidth: 600 }}>
                 <tr>
                   <td
                     style={cell({
@@ -211,7 +214,9 @@ export const TicketEmailHtml = (props: {
                           width="34%"
                           valign="middle"
                           style={cell({
-                            padding: "18px 12px 18px 20px",
+                            padding: "18px 8px 18px 20px",
+                            wordBreak: "normal",
+                            overflowWrap: "normal",
                             fontSize: 24,
                             fontWeight: 800,
                             lineHeight: "28px",
@@ -359,6 +364,7 @@ export const TicketEmailHtml = (props: {
                   </td>
                 </tr>
               </Table>
+              <RawHtml html="<!--[if mso]></td></tr></table><![endif]-->" />
             </td>
           </tr>
         </Table>
