@@ -68,7 +68,8 @@ import CancelBooking from "@calcom/web/components/booking/CancelBooking";
 import EventReservationSchema from "@calcom/web/components/schemas/EventReservationSchema";
 import { timeZone } from "@calcom/web/lib/clock";
 
-import { getCountdown } from "@calcom/web/modules/bookings/lib/formatCountdown";
+import { TicketCountdown } from "@calcom/web/modules/bookings/components/TicketCountdown";
+import { getDurationMinutes } from "@calcom/web/modules/bookings/lib/formatCountdown";
 
 import { usePaymentStatus } from "../hooks/usePaymentStatus";
 import type { PageProps } from "./bookings-single-view.getServerSideProps";
@@ -443,25 +444,15 @@ export default function Success(props: PageProps) {
       );
   const isRescheduleDisabled = !canReschedule || isWithinMinimumRescheduleNotice;
 
-  // Rendered only after mount: Date.now() differs between server and client and would break hydration.
-  const [msUntilStart, setMsUntilStart] = useState<number | null>(null);
-  useEffect(() => {
-    const startMs = new Date(bookingInfo.startTime).getTime();
-    const tick = () => setMsUntilStart(startMs - Date.now());
-    tick();
-    const id = setInterval(tick, 60_000);
-    return () => clearInterval(id);
-  }, [bookingInfo.startTime]);
-  const countdown = msUntilStart === null ? null : getCountdown(msUntilStart);
-  const countdownLabel = !countdown
-    ? null
-    : countdown.kind === "now"
-      ? t("ticket_starts_now")
-      : countdown.kind === "minutes"
-        ? t("ticket_starts_in_minutes", { minutes: countdown.minutes })
-        : countdown.kind === "hours"
-          ? t("ticket_starts_in_hours", { hours: countdown.hours, minutes: countdown.minutes })
-          : t("ticket_starts_in_days", { days: countdown.days, hours: countdown.hours });
+  const durationMinutes = getDurationMinutes(bookingInfo.startTime, bookingInfo.endTime);
+  const durationLabel =
+    durationMinutes <= 0
+      ? null
+      : durationMinutes < 60
+        ? t("multiple_duration_mins", { count: durationMinutes })
+        : durationMinutes % 60 === 0
+          ? t("ticket_duration_h", { hours: durationMinutes / 60 })
+          : t("ticket_duration_hm", { hours: Math.floor(durationMinutes / 60), minutes: durationMinutes % 60 });
 
   const ticketJoinUrl =
     shareableMeetingUrl && /^https?:\/\//i.test(shareableMeetingUrl) ? shareableMeetingUrl : null;
@@ -648,82 +639,88 @@ export default function Success(props: PageProps) {
                             </span>
                           </div>
                         </div>
-                        {/* Mobile: stacked rows (time, then QR) each with its caption; sm+: 2 columns + caption row */}
+                        {/* sm+: hero row (time | countdown + actions) over a caption row; mobile stacks in reading order */}
                         <div className="grid grid-cols-1 items-center gap-x-6 sm:grid-cols-2">
-                          <p className="text-emphasis font-cal order-1 text-center text-6xl font-extrabold leading-none -tracking-[0.04em] sm:mb-7 sm:text-7xl">
-                            {date.format(is24h ? "HH:mm" : "h:mma")}
-                          </p>
-                          <span className="text-brand-default order-2 mb-6 mt-3 text-center text-xs font-semibold sm:order-3 sm:mb-0 sm:mt-0 sm:border-t sm:border-dashed sm:border-[var(--cal-border)] sm:pt-3">
+                          <div className="order-1 flex flex-col items-center sm:mb-7">
+                            <p className="text-emphasis font-cal text-center text-5xl font-extrabold leading-none -tracking-[0.04em] sm:text-6xl">
+                              {date.format(is24h ? "HH:mm" : "h:mma")}
+                            </p>
+                            {durationLabel && (
+                              <p data-testid="ticket-duration" className="text-subtle mt-2 text-sm font-medium">
+                                {durationLabel}
+                              </p>
+                            )}
+                          </div>
+                          <span className="text-brand-default order-2 mb-6 mt-3 text-center text-xs font-semibold sm:order-3 sm:mb-0 sm:mt-0 sm:self-stretch sm:border-t sm:border-dashed sm:border-[var(--cal-border)] sm:pt-3">
                             {t("appointment_time")}
                           </span>
-                          <div className="border-default order-3 flex min-w-0 flex-col items-center gap-3 border-t border-dashed pt-6 sm:order-2 sm:mb-7 sm:border-0 sm:pt-0">
-                            {countdownLabel && (
-                              <span
-                                data-testid="ticket-countdown"
-                                className="text-brand-default border-default rounded-full border px-3 py-1 text-xs font-semibold">
-                                {countdownLabel}
-                              </span>
+                          <div className="border-default order-3 flex min-w-0 flex-col items-center gap-4 border-t border-dashed pt-6 sm:order-2 sm:mb-7 sm:border-0 sm:pt-0">
+                            <TicketCountdown startTime={bookingInfo.startTime} endTime={bookingInfo.endTime} />
+                            {(ticketJoinUrl || ticketCalendarLink || showTicketReschedule || showTicketCancel) && (
+                              <div className="grid w-full max-w-[18rem] grid-cols-2 gap-2 [&>*:last-child:nth-child(odd)]:col-span-2">
+                                {ticketJoinUrl && (
+                                  <button
+                                    type="button"
+                                    data-testid="ticket-copy-link"
+                                    className="rounded-lg border border-brand-default bg-[var(--cal-stamp)] text-emphasis flex min-h-9 min-w-0 items-center justify-center break-words px-3 py-2 text-center text-xs font-semibold leading-tight transition-colors [@media(hover:hover)]:hover:bg-brand-default [@media(hover:hover)]:hover:text-brand"
+                                    onClick={async () => {
+                                      try {
+                                        await navigator.clipboard.writeText(ticketJoinUrl);
+                                        showToast(t("link_copied"), "success");
+                                      } catch {
+                                        showToast(t("something_went_wrong"), "error");
+                                      }
+                                    }}>
+                                    {t("copy_meeting_link")}
+                                  </button>
+                                )}
+                                {ticketCalendarLink && (
+                                  <a
+                                    href={ticketCalendarLink}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="rounded-lg border border-brand-default bg-[var(--cal-stamp)] text-emphasis flex min-h-9 min-w-0 items-center justify-center break-words px-3 py-2 text-center text-xs font-semibold leading-tight transition-colors [@media(hover:hover)]:hover:bg-brand-default [@media(hover:hover)]:hover:text-brand">
+                                    {t("add_to_calendar")}
+                                  </a>
+                                )}
+                                {showTicketReschedule && (
+                                  <Link
+                                    href={`/reschedule/${seatReferenceUid || bookingInfo?.uid}${
+                                      currentUserEmail
+                                        ? `?rescheduledBy=${encodeURIComponent(currentUserEmail)}`
+                                        : ""
+                                    }`}
+                                    className="rounded-lg border border-brand-default bg-[var(--cal-stamp)] text-emphasis flex min-h-9 min-w-0 items-center justify-center break-words px-3 py-2 text-center text-xs font-semibold leading-tight transition-colors [@media(hover:hover)]:hover:bg-brand-default [@media(hover:hover)]:hover:text-brand">
+                                    {t("reschedule")}
+                                  </Link>
+                                )}
+                                {showTicketCancel && (
+                                  <button
+                                    type="button"
+                                    className="rounded-lg border border-brand-default bg-[var(--cal-stamp)] text-emphasis flex min-h-9 min-w-0 items-center justify-center break-words px-3 py-2 text-center text-xs font-semibold leading-tight transition-colors [@media(hover:hover)]:hover:bg-brand-default [@media(hover:hover)]:hover:text-brand"
+                                    onClick={() => setIsCancellationMode(true)}>
+                                    {t("cancel")}
+                                  </button>
+                                )}
+                              </div>
                             )}
-                            {ticketJoinUrl && (
+                          </div>
+                          <div className="order-4 mt-4 flex justify-center sm:mt-0 sm:self-stretch sm:border-t sm:border-dashed sm:border-[var(--cal-border)] sm:pt-3">
+                            {ticketJoinUrl ? (
                               <a
                                 data-testid="ticket-join"
                                 href={ticketJoinUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="bg-brand-default text-brand inline-flex w-full max-w-[16rem] items-center justify-center rounded-lg px-5 py-3 text-sm font-bold transition hover:opacity-90">
+                                className="bg-brand-default text-brand inline-flex w-full max-w-[18rem] items-center justify-center rounded-lg px-5 py-3 text-sm font-bold transition-opacity [@media(hover:hover)]:hover:opacity-90">
                                 {t("join_meeting")}
                               </a>
+                            ) : (
+                              <span className="text-brand-default text-center text-xs font-semibold">
+                                {t("ticket_join_caption")}
+                              </span>
                             )}
-                            <div className="text-emphasis flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs font-semibold">
-                              {ticketJoinUrl && (
-                                <button
-                                  type="button"
-                                  data-testid="ticket-copy-link"
-                                  className="underline underline-offset-2"
-                                  onClick={async () => {
-                                    try {
-                                      await navigator.clipboard.writeText(ticketJoinUrl);
-                                      showToast(t("link_copied"), "success");
-                                    } catch {
-                                      showToast(t("something_went_wrong"), "error");
-                                    }
-                                  }}>
-                                  {t("copy_meeting_link")}
-                                </button>
-                              )}
-                              {ticketCalendarLink && (
-                                <a
-                                  href={ticketCalendarLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="underline underline-offset-2">
-                                  {t("add_to_calendar")}
-                                </a>
-                              )}
-                              {showTicketReschedule && (
-                                <Link
-                                  href={`/reschedule/${seatReferenceUid || bookingInfo?.uid}${
-                                    currentUserEmail
-                                      ? `?rescheduledBy=${encodeURIComponent(currentUserEmail)}`
-                                      : ""
-                                  }`}
-                                  className="underline underline-offset-2">
-                                  {t("reschedule")}
-                                </Link>
-                              )}
-                              {showTicketCancel && (
-                                <button
-                                  type="button"
-                                  className="underline underline-offset-2"
-                                  onClick={() => setIsCancellationMode(true)}>
-                                  {t("cancel")}
-                                </button>
-                              )}
-                            </div>
                           </div>
-                          <span className="text-brand-default order-4 mt-3 text-center text-xs font-semibold sm:border-t sm:border-dashed sm:border-[var(--cal-border)] sm:pt-3">
-                            {t("ticket_join_caption")}
-                          </span>
                         </div>
                       </div>
                     ) : (

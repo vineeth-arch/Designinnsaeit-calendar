@@ -1,28 +1,23 @@
-const MINUTE = 60_000;
+const SECOND = 1000;
+const MINUTE = 60 * SECOND;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-export type Countdown =
-  | { kind: "now" }
-  | { kind: "minutes"; minutes: number }
-  | { kind: "hours"; hours: number; minutes: number }
-  | { kind: "days"; days: number; hours: number };
+export type Countdown = { days: number; hours: number; minutes: number; seconds: number };
 
-/** Returns null once the start time has passed, so callers can hide the countdown. */
+/** Returns null once the start time has passed (or input is not a finite number) so callers can hide it. */
 export function getCountdown(msUntilStart: number): Countdown | null {
-  if (msUntilStart <= 0) return null;
-  if (msUntilStart < MINUTE) return { kind: "now" };
-  if (msUntilStart < HOUR) return { kind: "minutes", minutes: Math.floor(msUntilStart / MINUTE) };
-  if (msUntilStart < DAY) {
-    return {
-      kind: "hours",
-      hours: Math.floor(msUntilStart / HOUR),
-      minutes: Math.floor((msUntilStart % HOUR) / MINUTE),
-    };
-  }
+  if (!Number.isFinite(msUntilStart) || msUntilStart <= 0) return null;
   return {
-    kind: "days",
     days: Math.floor(msUntilStart / DAY),
     hours: Math.floor((msUntilStart % DAY) / HOUR),
+    minutes: Math.floor((msUntilStart % HOUR) / MINUTE),
+    seconds: Math.floor((msUntilStart % MINUTE) / SECOND),
   };
+}
+
+/** Whole minutes between two instants; 0 for invalid or non-positive ranges. */
+export function getDurationMinutes(start: string | Date, end: string | Date): number {
+  const minutes = Math.round((new Date(end).getTime() - new Date(start).getTime()) / MINUTE);
+  return Number.isFinite(minutes) && minutes > 0 ? minutes : 0;
 }

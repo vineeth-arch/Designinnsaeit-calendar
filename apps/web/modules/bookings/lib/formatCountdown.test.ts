@@ -1,29 +1,43 @@
 import { describe, expect, it } from "vitest";
-import { getCountdown } from "./formatCountdown";
+import { getCountdown, getDurationMinutes } from "./formatCountdown";
 
-const MIN = 60_000;
+const SEC = 1000;
+const MIN = 60 * SEC;
 const HOUR = 60 * MIN;
 const DAY = 24 * HOUR;
 
 describe("getCountdown", () => {
-  it("returns null when start time has passed", () => {
+  it("returns null at or after start", () => {
     expect(getCountdown(0)).toBeNull();
-    expect(getCountdown(-5 * MIN)).toBeNull();
+    expect(getCountdown(-1)).toBeNull();
   });
 
-  it("returns now under one minute", () => {
-    expect(getCountdown(30_000)).toEqual({ kind: "now" });
+  it("returns null for non-finite input", () => {
+    expect(getCountdown(Number.NaN)).toBeNull();
   });
 
-  it("returns minutes under one hour", () => {
-    expect(getCountdown(45 * MIN + 10_000)).toEqual({ kind: "minutes", minutes: 45 });
+  it("rounds sub-second remainder down to zero seconds", () => {
+    expect(getCountdown(999)).toEqual({ days: 0, hours: 0, minutes: 0, seconds: 0 });
   });
 
-  it("returns hours and minutes under one day", () => {
-    expect(getCountdown(3 * HOUR + 20 * MIN)).toEqual({ kind: "hours", hours: 3, minutes: 20 });
+  it("splits seconds, minutes and hours", () => {
+    expect(getCountdown(59 * SEC)).toEqual({ days: 0, hours: 0, minutes: 0, seconds: 59 });
+    expect(getCountdown(HOUR + 2 * MIN + 3 * SEC)).toEqual({ days: 0, hours: 1, minutes: 2, seconds: 3 });
   });
 
-  it("returns days and hours from one day up", () => {
-    expect(getCountdown(2 * DAY + 4 * HOUR + 59 * MIN)).toEqual({ kind: "days", days: 2, hours: 4 });
+  it("carries whole days including three-digit values", () => {
+    expect(getCountdown(DAY)).toEqual({ days: 1, hours: 0, minutes: 0, seconds: 0 });
+    expect(getCountdown(100 * DAY + 23 * HOUR)).toEqual({ days: 100, hours: 23, minutes: 0, seconds: 0 });
+  });
+});
+
+describe("getDurationMinutes", () => {
+  it("returns minutes between start and end", () => {
+    expect(getDurationMinutes("2026-09-21T03:30:00Z", "2026-09-21T03:45:00Z")).toBe(15);
+  });
+
+  it("returns 0 for invalid or inverted ranges", () => {
+    expect(getDurationMinutes("bad", "2026-09-21T03:45:00Z")).toBe(0);
+    expect(getDurationMinutes("2026-09-21T04:00:00Z", "2026-09-21T03:00:00Z")).toBe(0);
   });
 });
