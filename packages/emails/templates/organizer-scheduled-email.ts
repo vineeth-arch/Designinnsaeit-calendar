@@ -13,6 +13,17 @@ import renderEmail from "../src/renderEmail";
 import BaseEmail from "./_base-email";
 
 export type Reassigned = { name: string | null; email: string; reason?: string; byUser?: string };
+// Seats, reassignment, recurring series and team members need copy the ticket layout doesn't carry,
+// so they keep the original detailed email.
+export function shouldUseTicketLayout(args: {
+  calEvent: CalendarEvent;
+  teamMember?: Person;
+  newSeat?: boolean;
+  reassigned?: Reassigned;
+}): boolean {
+  return !args.teamMember && !args.newSeat && !args.reassigned && !args.calEvent.recurringEvent?.count;
+}
+
 export default class OrganizerScheduledEmail extends BaseEmail {
   calEvent: CalendarEvent;
   t: TFunction;
@@ -74,13 +85,16 @@ export default class OrganizerScheduledEmail extends BaseEmail {
     newSeat?: boolean,
     reassigned?: Reassigned
   ) {
-    return await renderEmail("OrganizerScheduledEmail", {
-      calEvent,
-      attendee,
-      teamMember,
-      newSeat,
-      reassigned,
-    });
+    if (!shouldUseTicketLayout({ calEvent, teamMember, newSeat, reassigned })) {
+      return await renderEmail("OrganizerScheduledEmail", {
+        calEvent,
+        attendee,
+        teamMember,
+        newSeat,
+        reassigned,
+      });
+    }
+    return await renderEmail("OrganizerTicketNewBookingEmail", { calEvent });
   }
 
   protected getTextBody(

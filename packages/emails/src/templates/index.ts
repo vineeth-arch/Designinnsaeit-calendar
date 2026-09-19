@@ -11,6 +11,7 @@ export { AttendeeReminderEmail } from "./AttendeeReminderEmail";
 export { AttendeeRequestEmail } from "./AttendeeRequestEmail";
 export { AttendeeRescheduledEmail } from "./AttendeeRescheduledEmail";
 export { AttendeeScheduledEmail } from "./AttendeeScheduledEmail";
+export { AttendeeTicketConfirmationEmail } from "./AttendeeTicketConfirmationEmail";
 export { AttendeeUpdatedEmail } from "./AttendeeUpdatedEmail";
 export { AttendeeWasRequestedToRescheduleEmail } from "./AttendeeWasRequestedToRescheduleEmail";
 export { BookingRedirectEmailNotification } from "./BookingRedirectEmailNotification";
@@ -40,6 +41,7 @@ export { OrganizerRequestedToRescheduleEmail } from "./OrganizerRequestedToResch
 export { OrganizerRequestReminderEmail } from "./OrganizerRequestReminderEmail";
 export { OrganizerRescheduledEmail } from "./OrganizerRescheduledEmail";
 export { OrganizerScheduledEmail } from "./OrganizerScheduledEmail";
+export { OrganizerTicketNewBookingEmail } from "./OrganizerTicketNewBookingEmail";
 export { SlugReplacementEmail } from "./SlugReplacementEmail";
 export { TeamInviteEmail } from "./TeamInviteEmail";
 export { VerifyAccountEmail } from "./VerifyAccountEmail";
