@@ -39,8 +39,9 @@ n8n and never enter this repo.
 - **Cal.diy booking to Recall.ai bot:** `calWebhookSecret` (a new random secret, also set on the Cal webhook
   below), `recallBaseUrl` (your region URL from the Recall.ai dashboard, for example
   `https://us-east-1.recall.ai`), `botName`, `calApiBase`.
-- **Recall.ai transcript to Handshake:** `recallWebhookToken` (a new random token), `recallBaseUrl` (same as
-  above), `handshakeRecordingsUrl`.
+- **Recall.ai transcript to Handshake:** `recallWebhookSecret` (the workspace signing secret, `whsec_...`, see
+  step 5), `recallBaseUrl` (same as above), `handshakeRecordingsUrl`. `recallWebhookToken` is only a fallback
+  used while `recallWebhookSecret` is empty.
 - **Recall.ai automation error alert:** `alertUrl`, for example your ntfy topic URL.
 
 Also change the two webhook paths from `...-CHANGE-ME` to long random strings.
@@ -61,8 +62,14 @@ Also change the two webhook paths from `...-CHANGE-ME` to long random strings.
 - Leave the existing Handshake webhook alone.
 
 **Recall.ai dashboard → Webhooks → Add endpoint:**
-- URL = the production URL of *Recall.ai transcript to Handshake* followed by `?token=<recallWebhookToken>`.
+- URL = the production URL of *Recall.ai transcript to Handshake*.
 - Event: `bot.done`.
+- Signing secret: Recall.ai dashboard → Developers → API Keys & Secrets → Create Workspace Secret. Paste the
+  `whsec_...` value into `recallWebhookSecret` in the workflow's Config node. Requests are then verified by
+  signature (`webhook-id`, `webhook-timestamp`, `webhook-signature`; older workspaces send `svix-*` headers)
+  with a 5-minute timestamp window.
+- Without a signing secret, leave `recallWebhookSecret` empty, set `recallWebhookToken` and add
+  `?token=<recallWebhookToken>` to the endpoint URL. That only proves the caller knew the URL, so prefer the secret.
 
 ## 6. Test
 

@@ -29,14 +29,16 @@ const scenarios: ScenarioProps[] = [
     title: 'Range: "past"',
     description: "Restricts date selection to past dates only. Shows presets that are past-compatible.",
     expected:
-      "Presets visible: Today, Last 7 days, Last 30 days, Month to date, Year to date, Custom. Calendar maxDate = today.",
+      "Presets visible: Today, Last 7 days, Last 30 days, Month to date, Year to date, Custom. Calendar allows dates from 2 years ago up to today (maxDate = today).",
     range: "past",
   },
   {
     id: "future",
     title: 'Range: "future"',
-    description: "Restricts date selection to future dates only. Shows only future-compatible presets.",
-    expected: "Presets visible: Custom only (presets with direction 'any'). Calendar minDate = today.",
+    description:
+      "Restricts date selection to future dates only. Only the Custom preset is compatible, so it behaves like customOnly.",
+    expected:
+      "No presets dropdown (Custom is the only compatible preset, so the filter opens the calendar directly). Calendar minDate = today, no upper limit.",
     range: "future",
   },
   {
@@ -140,6 +142,19 @@ export default function DateRangeFilterPlayground() {
         <p className="text-subtle mt-1 text-sm">
           The <code>range</code> option controls both date restrictions and presets visibility. Presets
           visibility is derived automatically based on compatible presets.
+        </p>
+      </div>
+
+      <div className="border-subtle bg-muted rounded-lg border p-4 text-sm" data-testid="drf-how-to">
+        <h2 className="text-emphasis mb-1 font-semibold">How to use this page</h2>
+        <ol className="text-default list-decimal space-y-1 pl-5">
+          <li>This is an admin-only test page. Nothing you pick here is saved.</li>
+          <li>Open the filter button in each card below and choose a preset or a custom date range.</li>
+          <li>Compare what you see with the "Expected" line on that card.</li>
+        </ol>
+        <p className="text-subtle mt-2">
+          The same filter is used for real in the bookings list, Out of Office entries and the admin user
+          table, where <code>range</code> decides whether past dates, future dates or any date can be picked.
         </p>
       </div>
 

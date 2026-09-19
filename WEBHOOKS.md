@@ -2,7 +2,7 @@
 
 This is the contract for **this deployment** (`appointments.designinnsaeit.com`): what cal.diy sends, where, how it is signed, and what the receiver (Handshake) does with it. The generic upstream reference in `agents/skills/calcom-api/references/webhooks.md` is partly wrong for this fork (it shows a `sha256=` signature prefix and trigger names that do not exist).
 
-Last verified: 2026-09-19 against `BookingPayloadBuilder.ts` (payload version `2021-10-20`), the live v2 API, and Handshake commit `94d37ce`.
+Last verified: 2026-09-19 against `BookingPayloadBuilder.ts` (payload version `2021-10-20`) and the live v2 API; the secret and no-show gaps re-checked 2026-09-20 against Handshake `main`.
 
 ## Destination
 
@@ -48,7 +48,7 @@ export function signatureMatches(raw: string, header: string | null, secret: str
 | `BOOKING_CREATED` | a booking is created | upserts a `booking` row keyed on `payload.uid`; links or creates the person; saves booking-form answers as a message |
 | `BOOKING_RESCHEDULED` | a booking is rescheduled (new `uid`) | upserts the new booking, marks the old one (`payload.rescheduleUid`) cancelled, increments the reschedule count |
 | `BOOKING_CANCELLED` | a booking is cancelled | sets the booking status to `cancelled` |
-| `BOOKING_NO_SHOW_UPDATED` | a host marks an attendee no-show | intended: set `outcome = no_show`. **Does not work today**, see Known gaps |
+| `BOOKING_NO_SHOW_UPDATED` | a host marks an attendee no-show | sets `outcome = no_show` (reads `payload.uid ?? payload.bookingUid`) |
 | `BOOKING_PAID` | a payment for a booking succeeds | ignored (accepted, no effect) |
 
 Other cal.diy triggers (`BOOKING_REQUESTED`, `BOOKING_REJECTED`, `BOOKING_PAYMENT_INITIATED`, `MEETING_ENDED`, ...) exist but are not registered.
@@ -166,9 +166,9 @@ This example is composed from the builder and the live event-type configuration,
 
 ## Known gaps
 
-1. **No-shows are dropped.** `BOOKING_NO_SHOW_UPDATED` carries `payload.bookingUid`, but Handshake's route returns early unless `payload.uid` is set, so the no-show branch in `upsertBookingFromCal` never runs. Fix on the Handshake side: read `payload.bookingUid ?? payload.uid`.
+1. ~~No-shows are dropped.~~ **Fixed on the Handshake side** (its webhook route and `upsertBookingFromCal` read `payload.uid ?? payload.bookingUid`).
 2. **`BOOKING_PAID` is ignored** by Handshake, so payment status is not recorded. Payments also cannot complete end to end in this fork until the `/payment/[uid]` page loader is restored (see `DEFERRED-BUILD-LOG.md`).
-3. **Secret alignment.** Handshake currently has a `CAL_WEBHOOK_SECRET` that does not match the secret this webhook was registered with, so deliveries are rejected with `401` until the two are aligned (set Handshake's variable to the new secret, or re-register/patch this webhook with Handshake's existing secret).
+3. ~~Secret alignment.~~ **Verified 2026-09-20:** a correctly signed test delivery to Handshake returns `200` and a bad signature returns `401`, so both sides use the same secret.
 
 ## Managing the webhook
 
@@ -181,3 +181,8 @@ curl -s -X PATCH -H "Authorization: Bearer $CAL_API_KEY" -H "Content-Type: appli
   "$CAL_API_URL/webhooks/0636e832-a49f-455a-bc87-275a08f7cd25" \
   -d "$(jq -n --arg s "$HANDSHAKE_CAL_WEBHOOK_SECRET" '{secret:$s}')"
 ```
+
+## Related setup
+
+- Cron scheduling for the time-based triggers (`MEETING_ENDED` and friends only fire when `/api/cron/webhookTriggers` is called every minute): `deploy/cron-watchdog/README.md`.
+- A second, separate webhook can feed the Recall.ai notetaker workflows in n8n: `docs/recall-n8n/RECALL-SETUP.md`. The Handshake webhook above stays as it is.

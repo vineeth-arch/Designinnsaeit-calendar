@@ -219,7 +219,8 @@ const workflowA = {
 // ---------------------------------------------------------------- Workflow B: Recall transcript -> Handshake
 const CONFIG_B = `// Edit these values in n8n after importing.
 const cfg = {
-  recallWebhookToken: 'PASTE_A_RANDOM_TOKEN',     // also add ?token=<this> to the endpoint URL in the Recall.ai dashboard
+  recallWebhookSecret: '',                        // Recall.ai signing secret (whsec_...). Preferred: requests are verified by signature
+  recallWebhookToken: 'PASTE_A_RANDOM_TOKEN',     // used only while recallWebhookSecret is empty: add ?token=<this> to the endpoint URL
   recallBaseUrl: 'https://us-east-1.recall.ai',    // same region URL as in the booking workflow
   handshakeRecordingsUrl: 'https://handshake.designinnsaeit.com/api/recordings',
 };
@@ -227,12 +228,23 @@ const item = $input.first();
 return [{ json: { ...item.json, ...cfg }, binary: item.binary }];
 `;
 
-const ONLY_DONE = `const cfg = $('Config').first().json;
+const ONLY_DONE = `${HMAC}
+const cfg = $('Config').first().json;
 const hook = $input.first().json;
-if (!cfg.recallWebhookToken || cfg.recallWebhookToken.startsWith('PASTE_')) throw new Error('Config node: set recallWebhookToken first');
-if ((hook.query || {}).token !== cfg.recallWebhookToken) throw new Error('Bad token on the Recall webhook, ignoring request');
+const raw = await this.helpers.getBinaryDataBuffer(0, 'data');
 
-const body = hook.body || {};
+if (cfg.recallWebhookSecret) {
+  if (!verifyStandardWebhook(cfg.recallWebhookSecret, hook.headers || {}, raw, Date.now())) {
+    throw new Error('Invalid Recall.ai webhook signature, ignoring request');
+  }
+} else {
+  if (!cfg.recallWebhookToken || cfg.recallWebhookToken.startsWith('PASTE_')) {
+    throw new Error('Config node: set recallWebhookSecret (preferred) or recallWebhookToken first');
+  }
+  if ((hook.query || {}).token !== cfg.recallWebhookToken) throw new Error('Bad token on the Recall webhook, ignoring request');
+}
+
+const body = JSON.parse(new TextDecoder().decode(raw));
 if (body.event !== 'bot.done') return [];
 const bot = (body.data || {}).bot || {};
 return [{ json: { botId: bot.id, metadata: bot.metadata || {} } }];
@@ -281,8 +293,8 @@ const workflowB = {
       httpMethod: "POST",
       path: "recall-done-CHANGE-ME",
       responseMode: "onReceived",
-      options: {},
-    }, { notes: "Change the path to a long random string. In Recall.ai: Webhooks > add endpoint = production URL + ?token=<Config token>, event bot.done.", notesInFlow: true }),
+      options: { rawBody: true },
+    }, { notes: "Change the path to a long random string. In Recall.ai: add this production URL as a webhook endpoint for bot.done and put its signing secret in the Config node.", notesInFlow: true }),
     code("Config", [240, 200], CONFIG_B),
     code("Only bot.done", [480, 200], ONLY_DONE),
     http("Get bot", [720, 200], "GET", "={{ $('Config').first().json.recallBaseUrl }}/api/v1/bot/{{ $json.botId }}/", {

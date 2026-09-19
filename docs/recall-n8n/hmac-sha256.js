@@ -62,7 +62,7 @@ function sha256(msg) {
   return out;
 }
 
-function hmacSha256Hex(key, msg) {
+function hmacSha256Bytes(key, msg) {
   let k = typeof key === 'string' ? new TextEncoder().encode(key) : key;
   if (k.length > 64) k = sha256(k);
   const inner = new Uint8Array(64 + msg.length);
@@ -74,7 +74,65 @@ function hmacSha256Hex(key, msg) {
   }
   inner.set(msg, 64);
   outer.set(sha256(inner), 64);
-  return Array.from(sha256(outer), (x) => x.toString(16).padStart(2, '0')).join('');
+  return sha256(outer);
+}
+
+function hmacSha256Hex(key, msg) {
+  return Array.from(hmacSha256Bytes(key, msg), (x) => x.toString(16).padStart(2, '0')).join('');
+}
+
+const BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+
+function base64Encode(bytes) {
+  let out = '';
+  for (let i = 0; i < bytes.length; i += 3) {
+    const n = (bytes[i] << 16) | ((bytes[i + 1] || 0) << 8) | (bytes[i + 2] || 0);
+    out += BASE64_CHARS[(n >> 18) & 63] + BASE64_CHARS[(n >> 12) & 63];
+    out += i + 1 < bytes.length ? BASE64_CHARS[(n >> 6) & 63] : '=';
+    out += i + 2 < bytes.length ? BASE64_CHARS[n & 63] : '=';
+  }
+  return out;
+}
+
+function base64Decode(text) {
+  const clean = text.replace(/[^A-Za-z0-9+/]/g, '');
+  const out = new Uint8Array(Math.floor((clean.length * 3) / 4));
+  let bits = 0;
+  let acc = 0;
+  let j = 0;
+  for (const ch of clean) {
+    acc = (acc << 6) | BASE64_CHARS.indexOf(ch);
+    bits += 6;
+    if (bits >= 8) {
+      bits -= 8;
+      out[j++] = (acc >> bits) & 255;
+    }
+  }
+  return out;
+}
+
+// Recall.ai (and Svix) sign webhooks as HMAC-SHA256 over "<id>.<timestamp>.<body>", keyed with the
+// base64 part of a "whsec_..." secret, sent as "v1,<base64>" (several, space separated, during rotation).
+// Older Recall workspaces send the same thing under svix-* header names.
+function verifyStandardWebhook(secret, headers, rawBytes, nowMs) {
+  const id = headers['webhook-id'] || headers['svix-id'];
+  const timestamp = headers['webhook-timestamp'] || headers['svix-timestamp'];
+  const signatures = headers['webhook-signature'] || headers['svix-signature'];
+  if (!id || !timestamp || !signatures) return false;
+  const seconds = Number(timestamp);
+  if (!Number.isFinite(seconds) || Math.abs(nowMs / 1000 - seconds) > 300) return false;
+  const key = base64Decode(secret.startsWith('whsec_') ? secret.slice(6) : secret);
+  const prefix = new TextEncoder().encode(id + '.' + timestamp + '.');
+  const message = new Uint8Array(prefix.length + rawBytes.length);
+  message.set(prefix);
+  message.set(rawBytes, prefix.length);
+  const expected = base64Encode(hmacSha256Bytes(key, message));
+  return String(signatures)
+    .split(' ')
+    .some((part) => {
+      const [version, signature] = part.split(',');
+      return version === 'v1' && Boolean(signature) && timingSafeEqualStr(signature, expected);
+    });
 }
 
 function timingSafeEqualStr(a, b) {

@@ -4,6 +4,7 @@
 import { dueRoutes } from "./schedule.js";
 
 const MINUTE_MS = 60_000;
+const REQUIRED_SECRETS = ["CRON_API_KEY", "HEARTBEAT_TOKEN"];
 
 function safeEqual(a, b) {
   if (a.length !== b.length) return false;
@@ -53,6 +54,18 @@ export default {
 
   async scheduled(event, env, ctx) {
     const now = event.scheduledTime;
+
+    // A missing secret would make every failover call fail quietly, so say so loudly instead. The flag
+    // expires after a day so a still-broken Worker keeps reminding you.
+    const missing = REQUIRED_SECRETS.filter((name) => !env[name]);
+    if (missing.length > 0) {
+      console.log(`cron watchdog misconfigured: missing ${missing.join(", ")}`);
+      if (!(await env.STATE.get("misconfig_alerted"))) {
+        await env.STATE.put("misconfig_alerted", String(now), { expirationTtl: 86_400 });
+        ctx.waitUntil(alert(env, `cal.diy cron watchdog is missing secret(s): ${missing.join(", ")}. Failover cannot work until they are set.`));
+      }
+      return;
+    }
 
     let deployedAt = Number(await env.STATE.get("deployed_at"));
     if (!deployedAt) {

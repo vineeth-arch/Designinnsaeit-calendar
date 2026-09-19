@@ -14,7 +14,21 @@ only step is skipped and they show green while doing nothing. Those workflows ar
 - Never both at once: `handleWebhookScheduledTriggers` reads, sends, then deletes, so running it twice at
   the same moment would send some webhooks twice.
 
-## cron-job.org jobs (create these by hand)
+## cron-job.org jobs
+
+Create them with one command (dry run first; keys stay in your shell, never in the repo):
+
+```bash
+export CRONJOB_API_KEY=...   # cron-job.org > Settings > API
+export CRON_API_KEY=...      # same value as the CRON_API_KEY variable on the Railway `web` service
+node deploy/cron-watchdog/setup-cronjobs.mjs            # prints the plan, writes nothing
+node deploy/cron-watchdog/setup-cronjobs.mjs --apply    # creates or updates the jobs (about 2 minutes: cron-job.org allows 5 creations a minute)
+node deploy/cron-watchdog/setup-cronjobs.mjs --check    # one live call to webhookTriggers: 200 = key accepted
+```
+
+Re-running is safe: jobs are matched by title and updated. The script has only been tested against a mock of
+the cron-job.org API, so if a call is rejected, the error shows the HTTP status. The table below is the same
+list for creating jobs by hand.
 
 Base URL `https://appointments.designinnsaeit.com`. Every job sends the header
 `authorization: <CRON_API_KEY>` (the raw key, **no** `Bearer`), timeout 30 s, "notify on failure" on.
@@ -48,7 +62,9 @@ npx wrangler secret put ALERT_URL             # optional, e.g. your ntfy topic U
 npx wrangler deploy
 ```
 
-Then add the heartbeat job in cron-job.org with the `*.workers.dev` URL that `deploy` prints.
+Then re-run `setup-cronjobs.mjs --apply` with `HEARTBEAT_URL='https://<worker>.workers.dev/heartbeat?token=<HEARTBEAT_TOKEN>'`
+set, which adds the heartbeat job. If a secret is missing, the Worker logs it and sends one alert a day instead
+of failing quietly.
 
 ## Test the failover
 
@@ -70,6 +86,10 @@ heartbeat job URL together.
 - At most 5 subrequests per tick on the busiest minute, plus alert calls.
 
 ## Known limits
+
+- **Do not run reminders twice at once.** `bookingReminder` sends first and records it afterwards, and
+  `attendeeAutomations` records nothing (it relies on non-overlapping 15-minute windows), so two overlapping
+  runs can send duplicate emails. Never trigger these two routes by hand, and keep the Worker failover-only.
 
 - KV is eventually consistent (up to about 60 s), which does not matter against a 10-minute threshold.
 - If cron-job.org keeps running the jobs but only the heartbeat job stops, the Worker also fires and some

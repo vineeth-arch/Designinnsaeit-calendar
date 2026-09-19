@@ -103,3 +103,25 @@ test("a failing route does not stop the others or throw", async () => {
   await Promise.all(waiting);
   assert.equal(calls.length, 5);
 });
+
+test("a missing CRON_API_KEY alerts once, makes no route calls, and never throws", async () => {
+  const e = { ...env(), CRON_API_KEY: undefined, ALERT_URL: "https://alert.example/topic" };
+  store.set("deployed_at", String(NOW - 60 * MIN));
+  store.set("last_beat", String(NOW - 30 * MIN));
+
+  await tick(e);
+  await tick(e);
+
+  assert.equal(calls.filter((c) => c.url !== e.ALERT_URL).length, 0);
+  const alerts = calls.filter((c) => c.url === e.ALERT_URL);
+  assert.equal(alerts.length, 1);
+  assert.ok(alerts[0].init.body.includes("CRON_API_KEY"));
+});
+
+test("a missing HEARTBEAT_TOKEN is also reported", async () => {
+  const e = { ...env(), HEARTBEAT_TOKEN: undefined, ALERT_URL: "https://alert.example/topic" };
+
+  await tick(e);
+
+  assert.ok(calls.some((c) => c.url === e.ALERT_URL && c.init.body.includes("HEARTBEAT_TOKEN")));
+});

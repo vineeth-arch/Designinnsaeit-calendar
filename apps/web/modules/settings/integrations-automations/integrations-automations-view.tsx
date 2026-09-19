@@ -11,7 +11,9 @@ import type { IconName } from "@calcom/ui/components/icon";
 
 import SettingsHeader from "@calcom/features/settings/appDir/SettingsHeader";
 
-type WebhookSummary = { url: string; active: boolean; triggers: string[] };
+import type { WebhookSummary } from "./bookingWebhooks";
+import { summarizeBookingWebhooks } from "./bookingWebhooks";
+
 type EmailPreview = { title: string; caption: string; html: string };
 
 type Props = {
@@ -82,7 +84,7 @@ const StatusCard = ({
 
 export default function IntegrationsAutomationsView(props: Props) {
   const { t } = useLocale();
-  const n8nWebhook = props.webhooks.find((w) => w.triggers.some((trigger) => trigger.startsWith("BOOKING_")));
+  const bookingWebhooks = summarizeBookingWebhooks(props.webhooks);
   const [tab, setTab] = useState<"status" | "emails">("status");
 
   const tabButton = (key: "status" | "emails", label: string) => (
@@ -189,17 +191,17 @@ export default function IntegrationsAutomationsView(props: Props) {
           />
           <StatusCard
             icon="webhook"
-            title={t("webhook_n8n")}
-            description={t("webhook_n8n_description")}
-            connected={!!n8nWebhook?.active}
+            title={t("webhook_booking_events")}
+            description={t("webhook_booking_events_description")}
+            connected={bookingWebhooks.length > 0}
             connectedLabel={t("connected")}
             disconnectedLabel={t("not_connected")}
             manageHref="/settings/developer/webhooks">
-            {n8nWebhook && (
-              <p className="text-subtle mt-1 break-all text-xs">
-                {n8nWebhook.url} · {n8nWebhook.triggers.filter((x) => x.startsWith("BOOKING_")).join(", ")}
+            {bookingWebhooks.map((webhook) => (
+              <p key={webhook.host + webhook.triggers.join()} className="text-subtle mt-1 break-all text-xs">
+                {webhook.host} · {webhook.triggers.join(", ")}
               </p>
-            )}
+            ))}
           </StatusCard>
           <StatusCard
             icon="sparkles"
