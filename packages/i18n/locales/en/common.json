@@ -25,7 +25,7 @@
   "follow_up_card_description": "Emails the attendee after the event ends.",
   "webhook_n8n": "Webhook → n8n",
   "webhook_n8n_description": "Booking created/rescheduled/cancelled events POST to your automation URL.",
-  "recall_ai_description": "External meeting-notetaker, wired via n8n (not a native Cal integration).",
+  "recall_ai_description": "Meeting notetaker. Runs in Handshake: joins each booked Google Meet and saves the transcript to the desk inbox. Manage it there.",
   "email_templates": "Email templates",
   "email_preview_confirmation_caption": "Sent to the attendee immediately when a booking is created.",
   "email_preview_new_booking_caption": "Sent to you (the host) immediately when a booking is created.",

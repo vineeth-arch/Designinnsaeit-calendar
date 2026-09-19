@@ -101,7 +101,6 @@ const Page = async () => {
         !!process.env.RESEND_API_KEY || !!process.env.EMAIL_SERVER || !!process.env.EMAIL_SERVER_HOST
       }
       cronConfigured={!!process.env.CRON_API_KEY}
-      recallAiConnected={!!process.env.RECALL_AI_API_KEY}
       webhooks={webhooks}
       emailPreviews={emailPreviews}
     />
