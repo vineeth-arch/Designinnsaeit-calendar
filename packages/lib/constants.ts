@@ -115,11 +115,8 @@ export const POWERED_BY_URL = "https://go.cal.com/booking";
 export const DOCS_URL = "https://cal.com/docs";
 export const DEVELOPER_DOCS = "https://developer.cal.com";
 export const SEO_IMG_DEFAULT = `${CAL_URL}/og-image.png`;
-// The Dynamic OG Image is passed through Next's Image API to further optimize it.
-// This results in a 80% smaller image 🤯. It is however important that for the query
-// parameters you pass to the /api/social/og/image endpoint, you wrap them in encodeURIComponent
-// as well, otherwise the URL won't be valid.
-export const SEO_IMG_OGIMG = `${CAL_URL}/_next/image?w=1200&q=100&url=`;
+// Served directly by /api/social/og/image; the Next image optimizer is bypassed.
+export const SEO_IMG_OGIMG = CAL_URL;
 export const SEO_IMG_OGIMG_VIDEO = `${CAL_URL}/video-og-image.png`;
 export const IS_STRIPE_ENABLED = !!(
   process.env.STRIPE_CLIENT_ID &&

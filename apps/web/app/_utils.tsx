@@ -46,6 +46,11 @@ const _generateMetadataWithoutImage = async (
       siteName: APP_NAME,
       title: displayedTitle,
     },
+    twitter: {
+      card: "summary_large_image" as const,
+      title: displayedTitle,
+      description: truncateOnWord(description, 158),
+    },
     metadataBase,
   };
 };
@@ -66,15 +71,21 @@ export const _generateMetadata = async (
   );
   const image =
     SEO_IMG_OGIMG +
-    (await constructGenericImage({
-      title: metadata.title,
-      description: metadata.description,
-    }));
+    decodeURIComponent(
+      await constructGenericImage({
+        title: metadata.title,
+        description: metadata.description,
+      })
+    );
 
   return {
     ...metadata,
     openGraph: {
       ...metadata.openGraph,
+      images: [image],
+    },
+    twitter: {
+      ...metadata.twitter,
       images: [image],
     },
   };
@@ -104,19 +115,30 @@ export const _generateMetadataForStaticPage = async (
       siteName: APP_NAME,
       title: displayedTitle,
     },
+    twitter: {
+      card: "summary_large_image" as const,
+      title: displayedTitle,
+      description: truncateOnWord(description, 158),
+    },
     metadataBase,
   };
   const image =
     SEO_IMG_OGIMG +
-    (await constructGenericImage({
-      title: metadata.title,
-      description: metadata.description,
-    }));
+    decodeURIComponent(
+      await constructGenericImage({
+        title: metadata.title,
+        description: metadata.description,
+      })
+    );
 
   return {
     ...metadata,
     openGraph: {
       ...metadata.openGraph,
+      images: [image],
+    },
+    twitter: {
+      ...metadata.twitter,
       images: [image],
     },
   };
@@ -137,12 +159,16 @@ export const generateMeetingMetadata = async (
     origin,
     pathname
   );
-  const image = SEO_IMG_OGIMG + (await constructMeetingImage(meeting));
+  const image = SEO_IMG_OGIMG + decodeURIComponent(await constructMeetingImage(meeting));
 
   return {
     ...metadata,
     openGraph: {
       ...metadata.openGraph,
+      images: [image],
+    },
+    twitter: {
+      ...metadata.twitter,
       images: [image],
     },
   };
@@ -164,12 +190,17 @@ export const generateAppMetadata = async (
     pathname
   );
 
-  const image = SEO_IMG_OGIMG + (await constructAppImage({ ...app, description: metadata.description }));
+  const image =
+    SEO_IMG_OGIMG + decodeURIComponent(await constructAppImage({ ...app, description: metadata.description }));
 
   return {
     ...metadata,
     openGraph: {
       ...metadata.openGraph,
+      images: [image],
+    },
+    twitter: {
+      ...metadata.twitter,
       images: [image],
     },
   };
