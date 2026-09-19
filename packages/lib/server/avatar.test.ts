@@ -22,7 +22,7 @@ vi.mock("./imageUtils", () => ({
   convertSvgToPng: (...args: unknown[]) => mockConvertSvgToPng(...args),
 }));
 
-import { uploadAvatar } from "./avatar";
+import { uploadAvatar, uploadBrandLogo } from "./avatar";
 
 describe("uploadAvatar", () => {
   beforeEach(() => {
@@ -113,6 +113,48 @@ describe("uploadAvatar", () => {
     expect(mockUpsert).toHaveBeenCalledWith(
       expect.objectContaining({
         create: expect.objectContaining({ isBanner: false }),
+      })
+    );
+  });
+});
+
+describe("uploadBrandLogo", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockConvertSvgToPng.mockImplementation((data: string) => Promise.resolve(`processed_${data}`));
+    mockUpsert.mockResolvedValue(undefined);
+    mockUuidv4.mockReturnValue("generated-uuid-1234");
+  });
+
+  it("upserts the personal isBanner:true slot, never the avatar slot", async () => {
+    await uploadBrandLogo({ userId: 42, logo: "data" });
+
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { teamId_userId_isBanner: { teamId: 0, userId: 42, isBanner: true } },
+        create: expect.objectContaining({ userId: 42, isBanner: true, objectKey: "generated-uuid-1234" }),
+      })
+    );
+  });
+
+  it("issues a fresh objectKey on every upload (create AND update) so the cached OG card URL changes", async () => {
+    const result = await uploadBrandLogo({ userId: 1, logo: "data" });
+
+    expect(mockUuidv4).toHaveBeenCalledTimes(1);
+    expect(result).toBe("/api/avatar/generated-uuid-1234.png");
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({ update: expect.objectContaining({ objectKey: "generated-uuid-1234" }) })
+    );
+  });
+
+  it("normalises the image through convertSvgToPng and stores the processed data", async () => {
+    await uploadBrandLogo({ userId: 1, logo: "raw-data" });
+
+    expect(mockConvertSvgToPng).toHaveBeenCalledWith("raw-data");
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ data: "processed_raw-data" }),
+        update: expect.objectContaining({ data: "processed_raw-data" }),
       })
     );
   });

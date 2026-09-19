@@ -8,6 +8,7 @@ import { Controller, useForm } from "react-hook-form";
 import type { z } from "zod";
 
 import { BookerLayoutSelector } from "~/settings/components/BookerLayoutSelector";
+import { BrandLogoSetting } from "~/settings/components/BrandLogoSetting";
 import SectionBottomActions from "@calcom/features/settings/SectionBottomActions";
 import ThemeLabel from "@calcom/features/settings/ThemeLabel";
 import SettingsHeader from "@calcom/features/settings/appDir/SettingsHeader";
@@ -378,14 +379,7 @@ const AppearanceView = ({
             </div>
           </Form>
 
-          {/* TODO future PR to preview brandColors */}
-          {/* <Button
-        color="secondary"
-        EndIcon="external-link"
-        className="mt-6"
-        onClick={() => window.open(`${WEBAPP_URL}/${user.username}/${user.eventTypes[0].title}`, "_blank")}>
-        Preview
-      </Button> */}
+          <BrandLogoSetting user={user} />
 
           <SettingsToggle
             toggleSwitchAtTheEnd={true}

@@ -14,6 +14,8 @@ export interface MeetingImageProps {
   title: string;
   profile: { name: string; image?: string | null };
   users?: { name: string; username: string }[];
+  brandLogoUrl?: string | null;
+  brandColor?: string | null;
 }
 
 export interface AppImageProps {
@@ -51,7 +53,7 @@ const makeAbsoluteUrl = (url: string) => (/^https?:\/\//.test(url) ? url : `${CA
 
 const OG_ASSETS = {
   meeting: {
-    id: "meeting-og-image-v1", // Bump version when changing Meeting component structure/styling
+    id: "meeting-og-image-v2", // Bump version when changing Meeting component structure/styling
     logo: LOGO,
     logoWidth: "350",
     avatarSize: "160",
@@ -103,6 +105,8 @@ export const constructMeetingImage = async ({
   title,
   users = [],
   profile,
+  brandLogoUrl,
+  brandColor,
 }: MeetingImageProps): Promise<string> => {
   const params = new URLSearchParams({
     type: "meeting",
@@ -112,6 +116,14 @@ export const constructMeetingImage = async ({
 
   if (profile.image) {
     params.set("meetingImage", makeAbsoluteUrl(profile.image));
+  }
+
+  if (brandLogoUrl) {
+    params.set("brandLogoUrl", makeAbsoluteUrl(brandLogoUrl));
+  }
+
+  if (brandColor) {
+    params.set("brandColor", brandColor);
   }
 
   users.forEach((user) => {

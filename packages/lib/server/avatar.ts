@@ -44,6 +44,21 @@ export const uploadAvatar = async ({ userId, avatar: data }: { userId: number; a
   return `/api/avatar/${objectKey}.png`;
 };
 
+// ponytail: reuses the unused personal isBanner:true Avatar slot; add a discriminator if a user-banner feature ever lands.
+export const uploadBrandLogo = async ({ userId, logo: data }: { userId: number; logo: string }) => {
+  const processedData = await convertSvgToPng(data);
+  // New key on every upload: the OG card URL embeds this path and is cached for a year, so a fresh key is what makes a replaced logo show up.
+  const objectKey = uuidv4();
+
+  await prisma.avatar.upsert({
+    where: { teamId_userId_isBanner: { teamId: 0, userId, isBanner: true } },
+    create: { userId, data: processedData, objectKey, isBanner: true },
+    update: { data: processedData, objectKey },
+  });
+
+  return `/api/avatar/${objectKey}.png`;
+};
+
 export const uploadLogo = async ({
   teamId,
   logo: data,

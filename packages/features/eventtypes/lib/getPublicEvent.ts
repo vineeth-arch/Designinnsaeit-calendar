@@ -49,6 +49,7 @@ const userSelect = {
   weekStart: true,
   brandColor: true,
   darkBrandColor: true,
+  brandLogoUrl: true,
   theme: true,
   metadata: true,
   organization: {
@@ -369,6 +370,7 @@ export const getPublicEvent = async (
         weekStart: users[0].weekStart,
         brandColor: users[0].brandColor,
         darkBrandColor: users[0].darkBrandColor,
+        brandLogoUrl: null,
         theme: null,
         bookerLayouts: bookerLayoutsSchema.parse(
           firstUsersMetadata?.defaultBookerLayouts || defaultEventBookerLayouts
@@ -636,6 +638,7 @@ export function getProfileFromEvent(event: GetProfileFromEventInput) {
         }),
     brandColor: styleProfile.brandColor,
     darkBrandColor: styleProfile.darkBrandColor,
+    brandLogoUrl: team ? null : (nonTeamProfile?.brandLogoUrl ?? null),
     theme: styleProfile.theme,
     bookerLayouts: bookerLayoutsSchema.parse(
       eventMetaData?.bookerLayouts ||

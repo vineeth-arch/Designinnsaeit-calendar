@@ -6,7 +6,7 @@ import { ScheduleRepository } from "@calcom/features/schedules/repositories/Sche
 import hasKeyInMetadata from "@calcom/lib/hasKeyInMetadata";
 import { HttpError } from "@calcom/lib/http-error";
 import logger from "@calcom/lib/logger";
-import { uploadAvatar } from "@calcom/lib/server/avatar";
+import { uploadAvatar, uploadBrandLogo } from "@calcom/lib/server/avatar";
 import { getTranslation } from "@calcom/i18n/server";
 import { resizeBase64Image } from "@calcom/lib/server/resizeBase64Image";
 import slugify from "@calcom/lib/slugify";
@@ -30,6 +30,8 @@ const getBillingProviderService = async (..._args: unknown[]) => ({
 const updateNewTeamMemberEventTypes = async (..._args: unknown[]) => {};
 
 const log = logger.getSubLogger({ prefix: ["updateProfile"] });
+// The uploader downsizes to 512px, so real logos are tens of KB; this only stops oversized payloads.
+const MAX_BRAND_LOGO_DATA_URL_LENGTH = 1_500_000;
 type UpdateProfileOptions = {
   ctx: {
     user: NonNullable<TrpcSessionUser>;
@@ -167,6 +169,19 @@ export const updateProfileHandler = async ({ ctx, input }: UpdateProfileOptions)
     });
   }
 
+  // brandLogoUrl is only ever set by uploading a PNG/JPEG data URL (stored via the Avatar table) or cleared with null.
+  if (input.brandLogoUrl === null) {
+    data.brandLogoUrl = null;
+  } else if (typeof input.brandLogoUrl === "string") {
+    if (!/^data:image\/(png|jpe?g);base64,/.test(input.brandLogoUrl)) {
+      delete data.brandLogoUrl;
+    } else if (input.brandLogoUrl.length > MAX_BRAND_LOGO_DATA_URL_LENGTH) {
+      throw new TRPCError({ code: "BAD_REQUEST", message: "Logo is too large. Please upload an image under 1 MB." });
+    } else {
+      data.brandLogoUrl = await uploadBrandLogo({ logo: input.brandLogoUrl, userId: user.id });
+    }
+  }
+
   if (input.completedOnboarding) {
     const userTeams = await prisma.user.findUnique({
       where: {
@@ -235,6 +250,7 @@ export const updateProfileHandler = async ({ ctx, input }: UpdateProfileOptions)
       name: true,
       createdDate: true,
       avatarUrl: true,
+      brandLogoUrl: true,
       locale: true,
       schedules: {
         select: {
@@ -255,6 +271,7 @@ export const updateProfileHandler = async ({ ctx, input }: UpdateProfileOptions)
     name: string | null;
     createdDate: Date;
     avatarUrl: string | null;
+    brandLogoUrl: string | null;
     locale: string | null;
     schedules: { id: number }[];
   };
@@ -394,6 +411,7 @@ export const updateProfileHandler = async ({ ctx, input }: UpdateProfileOptions)
     ...input,
     email: emailVerification && !secondaryEmail?.emailVerified ? user.email : input.email,
     avatarUrl: updatedUser.avatarUrl,
+    brandLogoUrl: updatedUser.brandLogoUrl,
     hasEmailBeenChanged,
     sendEmailVerification: emailVerification && !secondaryEmail?.emailVerified,
   };

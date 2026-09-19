@@ -19,6 +19,7 @@ export type TUpdateProfileInputSchemaInput = {
   email?: string;
   bio?: string;
   avatarUrl?: string | null;
+  brandLogoUrl?: string | null;
   timeZone?: string;
   weekStart?: string;
   hideBranding?: boolean;
@@ -53,6 +54,7 @@ export type TUpdateProfileInputSchema = {
   email?: string;
   bio?: string;
   avatarUrl?: string | null;
+  brandLogoUrl?: string | null;
   timeZone?: string;
   weekStart?: string;
   hideBranding?: boolean;
@@ -91,6 +93,7 @@ export const ZUpdateProfileInputSchema: z.ZodType<
   email: z.string().optional(),
   bio: z.string().optional(),
   avatarUrl: z.string().nullable().optional(),
+  brandLogoUrl: z.string().nullable().optional(),
   timeZone: timeZoneSchema.optional(),
   weekStart: z.string().optional(),
   hideBranding: z.boolean().optional(),
