@@ -43,15 +43,18 @@ const buildEmailPreviews = async () => {
   };
 
   const [confirmation, newBooking, reminder24h, reminder1h, followUp] = await Promise.all([
-    renderEmail("AttendeeScheduledEmail", { calEvent, attendee }),
-    renderEmail("OrganizerScheduledEmail", { calEvent, attendee }),
+    renderEmail("AttendeeTicketConfirmationEmail", { calEvent, attendee }),
+    renderEmail("OrganizerTicketNewBookingEmail", { calEvent }),
     renderEmail("AttendeeReminderEmail", { calEvent, attendee, reminderLabel: "24h" }),
     renderEmail("AttendeeReminderEmail", { calEvent, attendee, reminderLabel: "1h" }),
     renderEmail("AttendeeFollowUpEmail", { calEvent, attendee }),
   ]);
 
   return [
-    { title: t("booking_confirmation"), caption: t("email_preview_confirmation_caption"), html: confirmation },
+    { title: t("booking_confirmation", {
+        eventTypeTitle: calEvent.type,
+        profileName: calEvent.organizer.name,
+      }), caption: t("email_preview_confirmation_caption"), html: confirmation },
     { title: t("new_booking_alert"), caption: t("email_preview_new_booking_caption"), html: newBooking },
     { title: t("reminder_24h_card_title"), caption: t("email_preview_24h_caption"), html: reminder24h },
     { title: t("reminder_1h_card_title"), caption: t("email_preview_1h_caption"), html: reminder1h },

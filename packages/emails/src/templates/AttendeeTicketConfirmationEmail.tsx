@@ -1,16 +1,11 @@
 import type { CalendarEvent, Person } from "@calcom/types/Calendar";
 import { TicketEmail } from "../components/TicketEmail";
 
-// Upcoming-booking reminder sent to the attendee ahead of the call, in the booking-ticket layout.
-export const AttendeeReminderEmail = (props: {
-  calEvent: CalendarEvent;
-  attendee: Person;
-  reminderLabel?: "24h" | "1h";
-}) => (
+export const AttendeeTicketConfirmationEmail = (props: { calEvent: CalendarEvent; attendee: Person }) => (
   <TicketEmail
     calEvent={props.calEvent}
     recipient={props.attendee}
-    variant={props.reminderLabel === "1h" ? "reminder1h" : "reminder24h"}
+    variant="confirmation"
     t={props.attendee.language.translate}
     timeZone={props.attendee.timeZone}
     locale={props.attendee.language.locale}

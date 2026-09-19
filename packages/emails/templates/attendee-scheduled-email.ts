@@ -58,10 +58,11 @@ export default class AttendeeScheduledEmail extends BaseEmail {
   }
 
   async getHtml(calEvent: CalendarEvent, attendee: Person) {
-    return await renderEmail("AttendeeScheduledEmail", {
-      calEvent,
-      attendee,
-    });
+    // Recurring series keep the detailed layout: the ticket shows a single occurrence only.
+    if (calEvent.recurringEvent?.count) {
+      return await renderEmail("AttendeeScheduledEmail", { calEvent, attendee });
+    }
+    return await renderEmail("AttendeeTicketConfirmationEmail", { calEvent, attendee });
   }
 
   protected getTextBody(title = "", subtitle = "emailed_you_and_any_other_attendees"): string {
