@@ -56,6 +56,7 @@ export const apiHandlers = {
   plausible: import("./plausible/api"),
   posthog: import("./posthog/api"),
   qr_code: import("./qr_code/api"),
+  razorpay: import("./razorpay/api"),
   riverside: import("./riverside/api"),
   roam: import("./roam/api"),
   salesforce: import("./salesforce/api"),
