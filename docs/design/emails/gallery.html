@@ -1,0 +1,108 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Booking emails: design gallery</title>
+<style>
+body{margin:0;font-family:system-ui,-apple-system,Helvetica,Arial,sans-serif;background:#f4f3ef;color:#161616;line-height:1.45}
+header,main{max-width:1500px;margin:0 auto;padding:24px}
+h1{margin:0 0 4px}h2{margin:32px 0 4px}h2 small{font-weight:400;color:#777;font-size:14px}h3{margin:16px 0 4px;font-size:14px;text-transform:uppercase;letter-spacing:.06em;color:#666}
+.meta{color:#444;margin:4px 0 12px}.row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap}
+iframe{border:1px solid #d6d1c4;background:#fff;border-radius:6px}figure{margin:0}figcaption{font-size:12px;color:#777;text-align:center}
+aside{flex:1;min-width:280px;background:#fff;border:1px solid #e5e2d8;border-radius:8px;padding:8px 16px}
+table{border-collapse:collapse;width:100%;font-size:13px}td{border-top:1px solid #eee;padding:6px 8px;vertical-align:top}
+.sws{display:flex;flex-wrap:wrap;gap:12px}.sw{display:flex;flex-direction:column;font-size:12px;width:96px}.sw i{height:44px;border:1px solid #ccc;border-radius:6px;margin-bottom:4px}
+.warn{background:#fff7d6;border:1px solid #ecd97a;border-radius:8px;padding:8px 16px}code{font-size:12px;background:#f0efe9;padding:1px 4px;border-radius:4px}
+</style></head><body><header>
+<h1>Booking emails: design gallery</h1>
+<p>Generated from the real email renderer, so these match what is sent. Figma is the design intent; these HTML emails are the source of truth for what email clients can do.</p>
+<div class="warn"><b>Email rules:</b><ul><li>Table layout only. No CSS grid or flex, no JavaScript, no web fonts, no SVG images.</li><li>Max width 600px; every two-cell row must stay readable at 320px because the layout scales down rather than stacking.</li><li>Images are PNG, JPG or GIF hosted at ${WEBAPP_URL}/emails/. Every image needs meaningful alt text.</li><li>Nothing essential may live only in an image: images are blocked by default in Outlook and some Gmail setups.</li><li>Animated GIF: under about 150 KB, must look right frozen on its first frame (Outlook desktop shows only frame 1), play once and hold.</li><li>Dark mode is forced light (color-scheme: light only). Design with opaque backgrounds.</li><li>Total email HTML must stay under 100 KB (Gmail clips at 102 KB).</li><li>Outlook desktop shows square corners and ignores some padding on links; the design must still read correctly.</li><li>Contrast: white on #FF006C is about 4.3:1, so use it only for bold or large text (16px bold or bigger).</li><li>Subject lines are unchanged and are not part of this design.</li></ul></div>
+<h3>Colour tokens</h3><div class="sws"><div class="sw"><i style="background:#EDEAE2"></i><b>page</b><span>#EDEAE2</span></div><div class="sw"><i style="background:#FBF9F3"></i><b>paper</b><span>#FBF9F3</span></div><div class="sw"><i style="background:#FF006C"></i><b>brand</b><span>#FF006C</span></div><div class="sw"><i style="background:#101010"></i><b>ink</b><span>#101010</span></div><div class="sw"><i style="background:#6B6B6B"></i><b>subtle</b><span>#6B6B6B</span></div><div class="sw"><i style="background:#D6D1C4"></i><b>rule</b><span>#D6D1C4</span></div><div class="sw"><i style="background:#FFFFFF"></i><b>onBrand</b><span>#FFFFFF</span></div><div class="sw"><i style="background:#FFE3EE"></i><b>onBrandMuted</b><span>#FFE3EE</span></div><div class="sw"><i style="background:#2C0098"></i><b>accentIndigo</b><span>#2C0098</span></div><div class="sw"><i style="background:#00FFCF"></i><b>accentMint</b><span>#00FFCF</span></div></div>
+<h3>Layout blocks</h3><table><tr><td><b>id</b></td><td><b>status</b></td><td><b>slots</b></td><td><b>notes</b></td></tr><tr><td><code>wordmark</code></td><td>shipped</td><td>brandName</td><td>Text wordmark above the card. The old logo.png is white-on-indigo and does not fit the beige page.</td></tr><tr><td><code>edgeTop</code></td><td>shipped</td><td></td><td>Scalloped top edge. Opaque PNG; the card still reads without it.</td></tr><tr><td><code>headerBand</code></td><td>shipped</td><td>label, eventName, dateText</td><td>Pink band, radius 12, two cells 34% / 66%. Label is the email's mood word.</td></tr><tr><td><code>hero</code></td><td>shipped</td><td>timeText, durationText, timezoneText, heroRight</td><td>Left: big time, duration, timezone. Right: starts-in line (later the countdown image).</td></tr><tr><td><code>perforation</code></td><td>shipped</td><td></td><td>2px dotted rule between hero and footer row.</td></tr><tr><td><code>footerRow</code></td><td>shipped</td><td>appointmentCaption, joinButton, manageCaption</td><td>Left caption; right is the Join button when the location is an http(s) link, otherwise the Manage booking caption.</td></tr><tr><td><code>actionGrid</code></td><td>shipped</td><td>actions[0..3]</td><td>2 columns, 8px gaps, paper background, pink 1px border. An odd last cell spans both columns. Not rendered when there are no actions.</td></tr><tr><td><code>stub</code></td><td>shipped</td><td>withLabel, withText, locationLabel, locationText, detailsLabel, details</td><td>Below a second dotted rule. Holds who, location (when not a link), description, notes, intake answers, price, and apps status for the host.</td></tr><tr><td><code>edgeBottom</code></td><td>shipped</td><td></td><td>Scalloped bottom edge.</td></tr><tr><td><code>footer</code></td><td>shipped</td><td>footerText</td><td>Small centered line.</td></tr><tr><td><code>celebrationStrip</code></td><td>proposed</td><td>image, alt</td><td>Confetti over or under the header band. Confirmation email.</td></tr><tr><td><code>stampGraphic</code></td><td>proposed</td><td>image, alt</td><td>Sits beside the time in the hero. Confirmation email.</td></tr><tr><td><code>sunriseStrip</code></td><td>proposed</td><td>image, alt</td><td>24-hour reminder mood strip.</td></tr><tr><td><code>tipCard</code></td><td>proposed</td><td>title, tips[3]</td><td>Three short pre-call tips for the 1-hour reminder.</td></tr><tr><td><code>leadSummaryChips</code></td><td>proposed</td><td>initials, brand, website, country</td><td>Initials avatar and a chip row of the attendee's intake answers, above the fold, host alert only.</td></tr><tr><td><code>postcardFrame</code></td><td>proposed</td><td>stampImage, thankYouImage, alt</td><td>Follow-up email: cream postcard look.</td></tr><tr><td><code>liveCountdownLink</code></td><td>proposed</td><td>label, href</td><td>Underlined pink link under the countdown: Open live countdown, pointing to the booking page which ticks live. Added with the countdown work.</td></tr></table>
+</header><main>
+<section id="confirmation">
+  <h2>Booked <small>confirmation</small></h2>
+  <p class="meta"><b>To:</b> Attendee · <b>When:</b> Immediately when a booking is created · <b>Code:</b> <code>packages/emails/src/templates/AttendeeTicketConfirmationEmail.tsx</code> (variant <code>confirmation</code>)</p>
+  <div class="row">
+    <figure><iframe src="emails/confirmation.html" width="620" height="1000" loading="lazy" title="emails/confirmation.html"></iframe><figcaption>620px</figcaption></figure><figure><iframe src="emails/confirmation.html" width="395" height="1000" loading="lazy" title="emails/confirmation.html"></iframe><figcaption>395px</figcaption></figure>
+    <aside>
+      <h3>Joy concept (proposal)</h3>
+      <p><b>You're in: the ticket just got stamped.</b></p>
+      <p>Motif: Confetti in brand pink, mint and indigo; ADMIT ONE stamp beside the time</p>
+      <p>Copy: You're in. We saved you a seat.</p>
+      <p>Motion: Confetti burst about 1.2 s over the band, then still</p>
+      <p>Assets: celebrationStrip 600x80, stampGraphic 120x120</p>
+      <h3>Dynamic fields</h3>
+      <table><tr><td>eventName</td><td>Discovery Call between Design Innsæit and Jordan Lee</td><td><code>calEvent.title</code></td></tr><tr><td>dateText</td><td>Monday, 21 September 2026</td><td><code>calEvent.startTime in recipient timezone</code></td></tr><tr><td>timeText</td><td>9:00am</td><td><code>calEvent.startTime, recipient timezone and 12/24h preference</code></td></tr><tr><td>durationText</td><td>30 mins</td><td><code>endTime minus startTime</code></td></tr><tr><td>timezoneText</td><td>India Standard Time</td><td><code>recipient timeZone</code></td></tr><tr><td>withText</td><td>Design Innsæit</td><td><code>calEvent.organizer.name</code></td></tr><tr><td>joinUrl</td><td>https://meet.google.com/abc-defg-hij</td><td><code>video call URL or http(s) location</code></td></tr><tr><td>details</td><td>Description, Brand, Website, Country</td><td><code>calEvent.description and intake responses</code></td></tr></table>
+      <p>Actions: View booking, Reschedule, Cancel · Join: when location is an http(s) link</p>
+    </aside>
+  </div>
+</section>
+<section id="host-alert">
+  <h2>New booking <small>host-alert</small></h2>
+  <p class="meta"><b>To:</b> Host (you) · <b>When:</b> Immediately when a booking is created · <b>Code:</b> <code>packages/emails/src/templates/OrganizerTicketNewBookingEmail.tsx</code> (variant <code>newBooking</code>)</p>
+  <div class="row">
+    <figure><iframe src="emails/host-alert.html" width="620" height="1000" loading="lazy" title="emails/host-alert.html"></iframe><figcaption>620px</figcaption></figure><figure><iframe src="emails/host-alert.html" width="395" height="1000" loading="lazy" title="emails/host-alert.html"></iframe><figcaption>395px</figcaption></figure>
+    <aside>
+      <h3>Joy concept (proposal)</h3>
+      <p><b>Cha-ching: a fresh lead landed.</b></p>
+      <p>Motif: Bell or coin icon, initials avatar of the attendee, chip row of intake answers above the fold</p>
+      <p>Copy: New booking from {name}</p>
+      <p>Motion: Bell ring about 1 s</p>
+      <p>Assets: leadSummaryChips, bell icon 48x48</p>
+      <h3>Dynamic fields</h3>
+      <table><tr><td>withText</td><td>Jordan Lee (jordan@acme.studio)</td><td><code>calEvent.attendees[0]</code></td></tr><tr><td>details</td><td>Intake answers, price, apps status</td><td><code>calEvent responses, paymentInfo, appsStatus</code></td></tr></table>
+      <p>Actions: View booking, Cancel · Join: when location is an http(s) link</p>
+    </aside>
+  </div>
+</section>
+<section id="reminder-24h">
+  <h2>Tomorrow <small>reminder-24h</small></h2>
+  <p class="meta"><b>To:</b> Attendee · <b>When:</b> 24 hours before the call · <b>Code:</b> <code>packages/emails/src/templates/AttendeeReminderEmail.tsx</code> (variant <code>reminder24h</code>)</p>
+  <div class="row">
+    <figure><iframe src="emails/reminder-24h.html" width="620" height="1000" loading="lazy" title="emails/reminder-24h.html"></iframe><figcaption>620px</figcaption></figure><figure><iframe src="emails/reminder-24h.html" width="395" height="1000" loading="lazy" title="emails/reminder-24h.html"></iframe><figcaption>395px</figcaption></figure>
+    <aside>
+      <h3>Joy concept (proposal)</h3>
+      <p><b>See you tomorrow: calm and warm.</b></p>
+      <p>Motif: Sunrise gradient strip, small sun icon</p>
+      <p>Copy: Tomorrow's the day. Here's everything you need.</p>
+      <p>Motion: None; the countdown image is the only motion</p>
+      <p>Assets: sunriseStrip 600x60</p>
+      <h3>Dynamic fields</h3>
+      <table><tr><td>startsIn</td><td>Starts in 1 day</td><td><code>computed at send time</code></td></tr></table>
+      <p>Actions: View booking, Reschedule, Cancel · Join: when location is an http(s) link</p>
+    </aside>
+  </div>
+</section>
+<section id="reminder-1h">
+  <h2>In 1 hour <small>reminder-1h</small></h2>
+  <p class="meta"><b>To:</b> Attendee · <b>When:</b> 1 hour before the call · <b>Code:</b> <code>packages/emails/src/templates/AttendeeReminderEmail.tsx</code> (variant <code>reminder1h</code>)</p>
+  <div class="row">
+    <figure><iframe src="emails/reminder-1h.html" width="620" height="1000" loading="lazy" title="emails/reminder-1h.html"></iframe><figcaption>620px</figcaption></figure><figure><iframe src="emails/reminder-1h.html" width="395" height="1000" loading="lazy" title="emails/reminder-1h.html"></iframe><figcaption>395px</figcaption></figure>
+    <aside>
+      <h3>Joy concept (proposal)</h3>
+      <p><b>Almost showtime: energy and one big action.</b></p>
+      <p>Motif: Larger countdown, larger Join button, three-tip card</p>
+      <p>Copy: Almost showtime. Your call starts in an hour.</p>
+      <p>Motion: Countdown image ticking</p>
+      <p>Assets: tipCard</p>
+      <h3>Dynamic fields</h3>
+      <table><tr><td>see confirmation</td></tr></table>
+      <p>Actions: Reschedule, Cancel · Join: when location is an http(s) link; should be the primary action</p>
+    </aside>
+  </div>
+</section>
+<section id="follow-up">
+  <h2>Thanks <small>follow-up</small></h2>
+  <p class="meta"><b>To:</b> Attendee · <b>When:</b> After the event ends · <b>Code:</b> <code>packages/emails/src/templates/AttendeeFollowUpEmail.tsx</code> (variant <code>followUp</code>)</p>
+  <div class="row">
+    <figure><iframe src="emails/follow-up.html" width="620" height="1000" loading="lazy" title="emails/follow-up.html"></iframe><figcaption>620px</figcaption></figure><figure><iframe src="emails/follow-up.html" width="395" height="1000" loading="lazy" title="emails/follow-up.html"></iframe><figcaption>395px</figcaption></figure>
+    <aside>
+      <h3>Joy concept (proposal)</h3>
+      <p><b>A thank-you postcard.</b></p>
+      <p>Motif: Cream postcard with a postage-stamp graphic and a hand-lettered Thank you image</p>
+      <p>Copy: Thanks for spending time with us.</p>
+      <p>Motion: None</p>
+      <p>Assets: postcardFrame</p>
+      <h3>Dynamic fields</h3>
+      <table><tr><td>see confirmation</td></tr></table>
+      <p>Actions: none · Join: never</p>
+    </aside>
+  </div>
+</section><h2>Edge cases</h2><section><h2>State: no-link</h2><p>Location is an address or phone number: no Join button, Manage booking caption, location shown in the stub.</p><div class="row"><figure><iframe src="emails/state-no-link.html" width="620" height="900" loading="lazy" title="emails/state-no-link.html"></iframe><figcaption>620px</figcaption></figure><figure><iframe src="emails/state-no-link.html" width="395" height="900" loading="lazy" title="emails/state-no-link.html"></iframe><figcaption>395px</figcaption></figure></div></section><section><h2>State: long-title</h2><p>120+ character event title, 90 minute event, no intake answers.</p><div class="row"><figure><iframe src="emails/state-long-title.html" width="620" height="900" loading="lazy" title="emails/state-long-title.html"></iframe><figcaption>620px</figcaption></figure><figure><iframe src="emails/state-long-title.html" width="395" height="900" loading="lazy" title="emails/state-long-title.html"></iframe><figcaption>395px</figcaption></figure></div></section><section><h2>State: images-blocked</h2><p>All images removed. The card must still read correctly.</p><div class="row"><figure><iframe src="emails/state-images-blocked.html" width="620" height="900" loading="lazy" title="emails/state-images-blocked.html"></iframe><figcaption>620px</figcaption></figure><figure><iframe src="emails/state-images-blocked.html" width="395" height="900" loading="lazy" title="emails/state-images-blocked.html"></iframe><figcaption>395px</figcaption></figure></div></section><h3>Also cover</h3><ul><li><b>actions-0-to-4</b>: The action grid shows 0 to 4 buttons; an odd last one spans both columns. Cover 4, 3, 2, 1 and 0.</li><li><b>intake-none-or-many</b>: Stub with no details, or with several intake answers.</li><li><b>24h-clock</b>: Recipient prefers a 24-hour clock: time shows as 09:00.</li><li><b>mobile-375</b>: Every email at 375px width.</li></ul></main></body></html>

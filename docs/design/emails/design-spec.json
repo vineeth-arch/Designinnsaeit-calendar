@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "brand": {
+    "name": "Design Innsæit",
+    "tagline": "Brand Strategy & Packaging Design Studio"
+  },
+  "tokens": {
+    "color": {
+      "page": "#EDEAE2",
+      "paper": "#FBF9F3",
+      "brand": "#FF006C",
+      "ink": "#101010",
+      "subtle": "#6B6B6B",
+      "rule": "#D6D1C4",
+      "onBrand": "#FFFFFF",
+      "onBrandMuted": "#FFE3EE",
+      "accentIndigo": "#2C0098",
+      "accentMint": "#00FFCF"
+    },
+    "colorNotes": "page/paper/brand/ink/subtle/rule/onBrand are used by the shipped ticket layout (TicketEmailHtml.tsx). accentIndigo and accentMint come from the older brand palette (brandColors.ts) and are available for joyful accents; they are not used by the current ticket layout.",
+    "type": {
+      "family": "'Helvetica Neue', Helvetica, Arial, sans-serif",
+      "familyNotes": "System fonts only. Custom fonts do not load in most email clients; use an image for hand-lettering.",
+      "scale": {
+        "label": { "size": 24, "weight": 800, "lineHeight": 28 },
+        "eventName": { "size": 16, "weight": 700, "lineHeight": 21 },
+        "hero": { "size": 44, "weight": 800, "lineHeight": 46, "letterSpacing": "-0.03em" },
+        "heroSub": { "size": 14, "weight": 400 },
+        "startsIn": { "size": 22, "weight": 800, "lineHeight": 28 },
+        "dateText": { "size": 12, "weight": 400 },
+        "caption": { "size": 12, "weight": 600 },
+        "action": { "size": 13, "weight": 600 },
+        "button": { "size": 14, "weight": 700 },
+        "eyebrow": { "size": 11, "weight": 400, "letterSpacing": "0.1em", "transform": "uppercase" },
+        "wordmark": { "size": 11, "weight": 700, "letterSpacing": "0.14em" },
+        "stubValue": { "size": 15, "weight": 400 },
+        "body": { "size": 14, "weight": 400 },
+        "footer": { "size": 11, "weight": 400 }
+      }
+    },
+    "space": [4, 6, 8, 12, 16, 18, 20, 24, 32],
+    "radius": { "band": 12, "button": 8, "actionCell": 8, "card": 0 },
+    "layout": {
+      "width": 600,
+      "mobileWidth": 375,
+      "pageGutter": "32px 12px",
+      "cardPadding": "20px 24px 24px",
+      "headerSplit": "34% / 66%",
+      "heroSplit": "50% / 50%",
+      "perforation": "2px dotted #D6D1C4"
+    }
+  },
+  "constraints": [
+    "Table layout only. No CSS grid or flex, no JavaScript, no web fonts, no SVG images.",
+    "Max width 600px; every two-cell row must stay readable at 320px because the layout scales down rather than stacking.",
+    "Images are PNG, JPG or GIF hosted at ${WEBAPP_URL}/emails/. Every image needs meaningful alt text.",
+    "Nothing essential may live only in an image: images are blocked by default in Outlook and some Gmail setups.",
+    "Animated GIF: under about 150 KB, must look right frozen on its first frame (Outlook desktop shows only frame 1), play once and hold.",
+    "Dark mode is forced light (color-scheme: light only). Design with opaque backgrounds.",
+    "Total email HTML must stay under 100 KB (Gmail clips at 102 KB).",
+    "Outlook desktop shows square corners and ignores some padding on links; the design must still read correctly.",
+    "Contrast: white on #FF006C is about 4.3:1, so use it only for bold or large text (16px bold or bigger).",
+    "Subject lines are unchanged and are not part of this design."
+  ],
+  "blocks": [
+    { "id": "wordmark", "status": "shipped", "slots": ["brandName"], "notes": "Text wordmark above the card. The old logo.png is white-on-indigo and does not fit the beige page." },
+    { "id": "edgeTop", "status": "shipped", "slots": [], "assets": ["assets/ticket-edge-top.png (1200x24, shown at 600x12)"], "notes": "Scalloped top edge. Opaque PNG; the card still reads without it." },
+    { "id": "headerBand", "status": "shipped", "slots": ["label", "eventName", "dateText"], "notes": "Pink band, radius 12, two cells 34% / 66%. Label is the email's mood word." },
+    { "id": "hero", "status": "shipped", "slots": ["timeText", "durationText", "timezoneText", "heroRight"], "notes": "Left: big time, duration, timezone. Right: starts-in line (later the countdown image)." },
+    { "id": "perforation", "status": "shipped", "slots": [], "notes": "2px dotted rule between hero and footer row." },
+    { "id": "footerRow", "status": "shipped", "slots": ["appointmentCaption", "joinButton", "manageCaption"], "notes": "Left caption; right is the Join button when the location is an http(s) link, otherwise the Manage booking caption." },
+    { "id": "actionGrid", "status": "shipped", "slots": ["actions[0..3]"], "notes": "2 columns, 8px gaps, paper background, pink 1px border. An odd last cell spans both columns. Not rendered when there are no actions." },
+    { "id": "stub", "status": "shipped", "slots": ["withLabel", "withText", "locationLabel", "locationText", "detailsLabel", "details"], "notes": "Below a second dotted rule. Holds who, location (when not a link), description, notes, intake answers, price, and apps status for the host." },
+    { "id": "edgeBottom", "status": "shipped", "slots": [], "assets": ["assets/ticket-edge-bottom.png"], "notes": "Scalloped bottom edge." },
+    { "id": "footer", "status": "shipped", "slots": ["footerText"], "notes": "Small centered line." },
+    { "id": "celebrationStrip", "status": "proposed", "slots": ["image", "alt"], "assets": ["600x80 PNG or short GIF"], "notes": "Confetti over or under the header band. Confirmation email." },
+    { "id": "stampGraphic", "status": "proposed", "slots": ["image", "alt"], "assets": ["ADMIT ONE style stamp, about 120x120 PNG"], "notes": "Sits beside the time in the hero. Confirmation email." },
+    { "id": "sunriseStrip", "status": "proposed", "slots": ["image", "alt"], "assets": ["600x60 pink-to-peach gradient PNG"], "notes": "24-hour reminder mood strip." },
+    { "id": "tipCard", "status": "proposed", "slots": ["title", "tips[3]"], "notes": "Three short pre-call tips for the 1-hour reminder." },
+    { "id": "leadSummaryChips", "status": "proposed", "slots": ["initials", "brand", "website", "country"], "notes": "Initials avatar and a chip row of the attendee's intake answers, above the fold, host alert only." },
+    { "id": "postcardFrame", "status": "proposed", "slots": ["stampImage", "thankYouImage", "alt"], "assets": ["postage stamp PNG", "hand-lettered Thank you PNG"], "notes": "Follow-up email: cream postcard look." },
+    { "id": "liveCountdownLink", "status": "proposed", "slots": ["label", "href"], "notes": "Underlined pink link under the countdown: Open live countdown, pointing to the booking page which ticks live. Added with the countdown work." }
+  ],
+  "emails": [
+    {
+      "id": "confirmation",
+      "audience": "Attendee",
+      "trigger": "Immediately when a booking is created",
+      "label": "Booked",
+      "blocksInOrder": ["wordmark", "edgeTop", "headerBand", "hero", "perforation", "footerRow", "actionGrid", "stub", "edgeBottom", "footer"],
+      "actions": ["View booking", "Reschedule", "Cancel"],
+      "joinButton": "when location is an http(s) link",
+      "heroRightCopy": "Starts in {N} days | Starts tomorrow | Starts in {N} hours | Starts in {N} minutes | Starting now",
+      "dynamicFields": [
+        { "name": "eventName", "sample": "Discovery Call between Design Innsæit and Jordan Lee", "source": "calEvent.title" },
+        { "name": "dateText", "sample": "Monday, 21 September 2026", "source": "calEvent.startTime in recipient timezone" },
+        { "name": "timeText", "sample": "9:00am", "source": "calEvent.startTime, recipient timezone and 12/24h preference" },
+        { "name": "durationText", "sample": "30 mins", "source": "endTime minus startTime" },
+        { "name": "timezoneText", "sample": "India Standard Time", "source": "recipient timeZone" },
+        { "name": "withText", "sample": "Design Innsæit", "source": "calEvent.organizer.name" },
+        { "name": "joinUrl", "sample": "https://meet.google.com/abc-defg-hij", "source": "video call URL or http(s) location" },
+        { "name": "details", "sample": "Description, Brand, Website, Country", "source": "calEvent.description and intake responses" }
+      ],
+      "joy": {
+        "concept": "You're in: the ticket just got stamped.",
+        "motif": "Confetti in brand pink, mint and indigo; ADMIT ONE stamp beside the time",
+        "assets": ["celebrationStrip 600x80", "stampGraphic 120x120"],
+        "copy": "You're in. We saved you a seat.",
+        "motion": "Confetti burst about 1.2 s over the band, then still"
+      },
+      "code": { "template": "packages/emails/src/templates/AttendeeTicketConfirmationEmail.tsx", "variant": "confirmation" },
+      "preview": "emails/confirmation.html"
+    },
+    {
+      "id": "host-alert",
+      "audience": "Host (you)",
+      "trigger": "Immediately when a booking is created",
+      "label": "New booking",
+      "blocksInOrder": ["wordmark", "edgeTop", "headerBand", "hero", "perforation", "footerRow", "actionGrid", "stub", "edgeBottom", "footer"],
+      "actions": ["View booking", "Cancel"],
+      "joinButton": "when location is an http(s) link",
+      "heroRightCopy": "Same starts-in tiers as the confirmation",
+      "dynamicFields": [
+        { "name": "withText", "sample": "Jordan Lee (jordan@acme.studio)", "source": "calEvent.attendees[0]" },
+        { "name": "details", "sample": "Intake answers, price, apps status", "source": "calEvent responses, paymentInfo, appsStatus" }
+      ],
+      "notes": "Team, seat, reassigned and recurring bookings keep the older detailed layout.",
+      "joy": {
+        "concept": "Cha-ching: a fresh lead landed.",
+        "motif": "Bell or coin icon, initials avatar of the attendee, chip row of intake answers above the fold",
+        "assets": ["leadSummaryChips", "bell icon 48x48"],
+        "copy": "New booking from {name}",
+        "motion": "Bell ring about 1 s"
+      },
+      "code": { "template": "packages/emails/src/templates/OrganizerTicketNewBookingEmail.tsx", "variant": "newBooking" },
+      "preview": "emails/host-alert.html"
+    },
+    {
+      "id": "reminder-24h",
+      "audience": "Attendee",
+      "trigger": "24 hours before the call",
+      "label": "Tomorrow",
+      "blocksInOrder": ["wordmark", "edgeTop", "headerBand", "hero", "perforation", "footerRow", "actionGrid", "stub", "edgeBottom", "footer"],
+      "actions": ["View booking", "Reschedule", "Cancel"],
+      "joinButton": "when location is an http(s) link",
+      "heroRightCopy": "Starts tomorrow (tier text at send time)",
+      "dynamicFields": [
+        { "name": "startsIn", "sample": "Starts in 1 day", "source": "computed at send time" }
+      ],
+      "joy": {
+        "concept": "See you tomorrow: calm and warm.",
+        "motif": "Sunrise gradient strip, small sun icon",
+        "assets": ["sunriseStrip 600x60"],
+        "copy": "Tomorrow's the day. Here's everything you need.",
+        "motion": "None; the countdown image is the only motion"
+      },
+      "code": { "template": "packages/emails/src/templates/AttendeeReminderEmail.tsx", "variant": "reminder24h" },
+      "preview": "emails/reminder-24h.html"
+    },
+    {
+      "id": "reminder-1h",
+      "audience": "Attendee",
+      "trigger": "1 hour before the call",
+      "label": "In 1 hour",
+      "blocksInOrder": ["wordmark", "edgeTop", "headerBand", "hero", "perforation", "footerRow", "actionGrid", "stub", "edgeBottom", "footer"],
+      "actions": ["Reschedule", "Cancel"],
+      "joinButton": "when location is an http(s) link; should be the primary action",
+      "heroRightCopy": "Starts in 1 hour",
+      "joy": {
+        "concept": "Almost showtime: energy and one big action.",
+        "motif": "Larger countdown, larger Join button, three-tip card",
+        "assets": ["tipCard"],
+        "copy": "Almost showtime. Your call starts in an hour.",
+        "motion": "Countdown image ticking"
+      },
+      "code": { "template": "packages/emails/src/templates/AttendeeReminderEmail.tsx", "variant": "reminder1h" },
+      "preview": "emails/reminder-1h.html"
+    },
+    {
+      "id": "follow-up",
+      "audience": "Attendee",
+      "trigger": "After the event ends",
+      "label": "Thanks",
+      "blocksInOrder": ["wordmark", "edgeTop", "headerBand", "hero", "perforation", "footerRow", "stub", "edgeBottom", "footer"],
+      "actions": [],
+      "joinButton": "never",
+      "heroRightCopy": "Thank you for your time",
+      "joy": {
+        "concept": "A thank-you postcard.",
+        "motif": "Cream postcard with a postage-stamp graphic and a hand-lettered Thank you image",
+        "assets": ["postcardFrame"],
+        "copy": "Thanks for spending time with us.",
+        "motion": "None"
+      },
+      "code": { "template": "packages/emails/src/templates/AttendeeFollowUpEmail.tsx", "variant": "followUp" },
+      "preview": "emails/follow-up.html"
+    }
+  ],
+  "states": [
+    { "id": "no-link", "description": "Location is an address or phone number: no Join button, Manage booking caption, location shown in the stub.", "preview": "emails/state-no-link.html" },
+    { "id": "long-title", "description": "120+ character event title, 90 minute event, no intake answers.", "preview": "emails/state-long-title.html" },
+    { "id": "images-blocked", "description": "All images removed. The card must still read correctly.", "preview": "emails/state-images-blocked.html" },
+    { "id": "actions-0-to-4", "description": "The action grid shows 0 to 4 buttons; an odd last one spans both columns. Cover 4, 3, 2, 1 and 0." },
+    { "id": "intake-none-or-many", "description": "Stub with no details, or with several intake answers." },
+    { "id": "24h-clock", "description": "Recipient prefers a 24-hour clock: time shows as 09:00." },
+    { "id": "mobile-375", "description": "Every email at 375px width." }
+  ],
+  "countdown": {
+    "copyTiers": [
+      { "timeToStart": "48 h or more", "copy": "Starts in {N} days" },
+      { "timeToStart": "24 to 48 h", "copy": "Starts tomorrow" },
+      { "timeToStart": "2 to 24 h", "copy": "Starts in {N} hours" },
+      { "timeToStart": "1 to 2 h", "copy": "Starts in 1 hour" },
+      { "timeToStart": "2 to 59 min", "copy": "Starts in {N} minutes" },
+      { "timeToStart": "under 2 min", "copy": "Starting now" },
+      { "timeToStart": "started, not ended", "copy": "Happening now" }
+    ],
+    "gif": {
+      "status": "planned",
+      "size": "480x110 (shown at 240x55)",
+      "frames": 60,
+      "behaviour": "Drawn by the server when the email is opened; ticks about 60 seconds then holds. Also shows the absolute start time. Days and hours only when 48 h or more away; seconds only in the last 2 hours.",
+      "limits": "Outlook desktop shows only the first frame. Apple Mail Privacy Protection may load the image at delivery, so it can show a stale value; the Open live countdown link goes to a page that always ticks live."
+    }
+  }
+}
