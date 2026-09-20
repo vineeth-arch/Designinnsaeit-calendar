@@ -28,6 +28,7 @@ import {
 } from "./blocks";
 import { BOOKING_HOST, buildContext, stripProtocol, type V6Context, withProtocol } from "./context";
 import { HOST, PREHEADERS, SUBJECTS } from "./copy";
+import { countdownImage, liveCountdownLink } from "./countdown";
 import { addWorkingDays } from "./derive";
 import { S } from "./styles";
 
@@ -49,6 +50,12 @@ const ctxOf = (i: V6Input): V6Context =>
     now: i.now ?? Date.now(),
     timeFormat: i.timeFormat,
   });
+
+/** Countdown for the two emails whose design has none: days, hours, minutes on paper. */
+const countdownBlock = (c: V6Context): string[] => {
+  const image = countdownImage(c, "dhm", "paper");
+  return image ? [spacer.s22, image, liveCountdownLink(c)] : [];
+};
 
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 const T0 = 'role="presentation" cellpadding="0" cellspacing="0" border="0"';
@@ -108,6 +115,7 @@ export function renderConfirmation(input: V6Input): V6Rendered {
       line1: `to ${c.time.end}, ${c.zoneLabel}`,
       line2: `${c.hostLineText}. ${cap(c.fromNowText)}.`.replace(/^(\d)/, "$1"),
     }),
+    ...countdownBlock(c),
     spacer.s22,
     primaryButton(c.gcalUrl, "Add to Google Calendar"),
     paragraph(S.S31, "Outlook or Apple Calendar? Open the invite.ics attached to this email."),
@@ -268,6 +276,7 @@ export function renderReminder24h(input: V6Input): V6Rendered {
       S.S106,
       esc(`${c.zoneLabel}. ${c.durationMinutes} minutes${place ? ` ${place}` : ""} with ${HOST.firstName}.`)
     ),
+    ...countdownBlock(c),
     spacer.s24,
     paragraph(S.S33, `${esc(c.first)}, bring three things`),
     spacer.s12,
@@ -341,7 +350,7 @@ export function renderReminder1h(input: V6Input): V6Rendered {
   const subject = SUBJECTS.reminder1h();
   const day = relativeDayForLine(c);
 
-  const hero = `<tr><td bgcolor="#FF006C" style="${S.S117}">${paragraph(S.S118, `${esc(c.first)}, your call starts in`)}${spacer.s10}${countdownText(c.msUntilStart)}${paragraph(S.S123, esc(`${c.time.start} ${c.zoneShort}, ${day}`))}${spacer.s20}${
+  const hero = `<tr><td bgcolor="#FF006C" style="${S.S117}">${paragraph(S.S118, `${esc(c.first)}, your call starts in`)}${spacer.s10}${countdownImage(c, "hms", "hero") ?? countdownText(c.msUntilStart)}${paragraph(S.S123, esc(`${c.time.start} ${c.zoneShort}, ${day}`))}${spacer.s20}${
     c.joinUrl
       ? `<table ${T0} width="100%" style="${S.S28}"><tr><td align="center" bgcolor="#FFFFFF" style="${S.S124}">${link(c.joinUrl, "Join the call", S.S125)}</td></tr></table>`
       : ""
