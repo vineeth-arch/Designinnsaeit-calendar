@@ -1,3 +1,4 @@
+import process from "node:process";
 import { beforeAll, describe, expect, it } from "vitest";
 import renderEmail from "../renderEmail";
 import { bodyFragment } from "./normalize";
@@ -215,5 +216,46 @@ describe("no-show variant", () => {
     expect(r.html).toContain("MISSED CALL");
     expect(r.html).toContain("Pick a new time");
     expect(r.html).not.toContain("here is what happens next");
+  });
+});
+
+describe("countdown image", () => {
+  const withSecret = async (fn: () => void) => {
+    const prev = process.env.NEXTAUTH_SECRET;
+    process.env.NEXTAUTH_SECRET = "test-secret";
+    try {
+      fn();
+    } finally {
+      if (prev === undefined) Reflect.deleteProperty(process.env, "NEXTAUTH_SECRET");
+      else process.env.NEXTAUTH_SECRET = prev;
+    }
+  };
+
+  it("is used in confirmation, 24h and 1h when a secret exists, with alt text and a live link", async () => {
+    await withSecret(() => {
+      for (const [render, input] of [
+        [renderConfirmation, attendeeInput()],
+        [renderReminder24h, attendeeInput({}, start - DAY)],
+        [renderReminder1h, attendeeInput({}, start - HOUR)],
+      ] as const) {
+        const { html } = render(input);
+        expect(html).toMatch(/<img src="[^"]*\/api\/email\/countdown\?t=\d+&amp;g=(hms|dhm)/);
+        expect(html).toMatch(/alt="Starts in [^"]*as of when this email was sent\./);
+        expect(Buffer.byteLength(html)).toBeLessThan(100 * 1024);
+      }
+      expect(renderConfirmation(attendeeInput()).html).toContain("Open live countdown");
+      expect(renderReminder1h(attendeeInput({}, start - HOUR)).html).not.toContain("Open live countdown");
+    });
+  });
+
+  it("falls back to static text without a secret", () => {
+    const prev = process.env.NEXTAUTH_SECRET;
+    process.env.NEXTAUTH_SECRET = "";
+    try {
+      expect(renderConfirmation(attendeeInput()).html).not.toContain("/api/email/countdown");
+      expect(renderReminder1h(attendeeInput({}, start - HOUR)).html).toContain("seconds");
+    } finally {
+      if (prev !== undefined) process.env.NEXTAUTH_SECRET = prev;
+    }
   });
 });
