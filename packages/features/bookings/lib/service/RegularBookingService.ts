@@ -1406,6 +1406,7 @@ async function handler(
       customReplyToEmail: eventType.customReplyToEmail,
       disableRescheduling: eventType.disableRescheduling ?? false,
       disableCancelling: eventType.disableCancelling ?? false,
+      minimumRescheduleNotice: eventType.minimumRescheduleNotice ?? null,
     })
     .withMetadataAndResponses({
       additionalNotes,

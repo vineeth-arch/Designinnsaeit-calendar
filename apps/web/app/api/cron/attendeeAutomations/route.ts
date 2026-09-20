@@ -62,7 +62,7 @@ async function postHandler(request: NextRequest) {
           select: { id: true, email: true, name: true, username: true, locale: true, timeZone: true },
         },
         eventType: {
-          select: { recurringEvent: true, bookingFields: true, title: true },
+          select: { recurringEvent: true, bookingFields: true, title: true, minimumRescheduleNotice: true },
         },
       },
     });
@@ -108,6 +108,7 @@ async function postHandler(request: NextRequest) {
         attendees: attendeesList,
         uid: booking.uid,
         recurringEvent: parseRecurringEvent(booking.eventType?.recurringEvent),
+        minimumRescheduleNotice: booking.eventType?.minimumRescheduleNotice ?? null,
       };
 
       for (const attendee of attendeesList) {

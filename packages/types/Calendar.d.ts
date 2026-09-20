@@ -209,6 +209,8 @@ export interface CalendarEvent {
   hideOrganizerEmail?: boolean;
   disableCancelling?: boolean;
   disableRescheduling?: boolean;
+  /** Minutes before the start after which the booker can no longer reschedule (event type setting). */
+  minimumRescheduleNotice?: number | null;
 
   // It has responses to all the fields(system + user)
   responses?: CalEventResponses | null;

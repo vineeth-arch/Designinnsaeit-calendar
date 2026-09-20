@@ -317,6 +317,7 @@ export class CalendarEventBuilder {
     customReplyToEmail?: string | null;
     disableRescheduling?: boolean;
     disableCancelling?: boolean;
+    minimumRescheduleNotice?: number | null;
   }) {
     this.event = {
       ...this.event,
@@ -333,6 +334,7 @@ export class CalendarEventBuilder {
       customReplyToEmail: eventType.customReplyToEmail,
       disableRescheduling: eventType.disableRescheduling ?? false,
       disableCancelling: eventType.disableCancelling ?? false,
+      minimumRescheduleNotice: eventType.minimumRescheduleNotice ?? null,
     };
     return this;
   }

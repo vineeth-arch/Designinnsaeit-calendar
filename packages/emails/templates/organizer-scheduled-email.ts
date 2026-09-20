@@ -10,6 +10,7 @@ import type { CalendarEvent, Person } from "@calcom/types/Calendar";
 import generateIcsFile from "../lib/generateIcsFile";
 import { GenerateIcsRole } from "../lib/generateIcsFile";
 import renderEmail from "../src/renderEmail";
+import { renderHostAlert } from "../src/ticket-v6/templates";
 import BaseEmail from "./_base-email";
 
 export type Reassigned = { name: string | null; email: string; reason?: string; byUser?: string };
@@ -66,7 +67,7 @@ export default class OrganizerScheduledEmail extends BaseEmail {
         this.calEvent.attendees.map(({ email }) => email),
         true
       ),
-      subject: `${this.newSeat ? `${this.t("new_attendee")}: ` : ""}${this.calEvent.title}`,
+      subject: this.getSubject(),
       html: await this.getHtml(
         clonedCalEvent,
         this.attendee || this.calEvent.organizer,
@@ -78,6 +79,32 @@ export default class OrganizerScheduledEmail extends BaseEmail {
     };
   }
 
+  // The v6 design applies to the plain host alert only. Subclasses, seats, reassignment, recurring
+  // series and team members keep the original detailed email and subject.
+  private usesV6Layout(): boolean {
+    return (
+      this.name === "SEND_BOOKING_CONFIRMATION" &&
+      shouldUseTicketLayout({
+        calEvent: this.calEvent,
+        teamMember: this.teamMember,
+        newSeat: this.newSeat,
+        reassigned: this.reassigned,
+      })
+    );
+  }
+
+  protected getSubject(): string {
+    if (!this.usesV6Layout()) {
+      return `${this.newSeat ? `${this.t("new_attendee")}: ` : ""}${this.calEvent.title}`;
+    }
+    return renderHostAlert({
+      calEvent: this.calEvent,
+      recipient: this.calEvent.organizer,
+      timeZone: this.calEvent.organizer.timeZone,
+      timeFormat: this.calEvent.organizer.timeFormat,
+    }).subject;
+  }
+
   async getHtml(
     calEvent: CalendarEvent,
     attendee: Person,
@@ -85,7 +112,7 @@ export default class OrganizerScheduledEmail extends BaseEmail {
     newSeat?: boolean,
     reassigned?: Reassigned
   ) {
-    if (!shouldUseTicketLayout({ calEvent, teamMember, newSeat, reassigned })) {
+    if (!this.usesV6Layout()) {
       return await renderEmail("OrganizerScheduledEmail", {
         calEvent,
         attendee,
@@ -94,7 +121,7 @@ export default class OrganizerScheduledEmail extends BaseEmail {
         reassigned,
       });
     }
-    return await renderEmail("OrganizerTicketNewBookingEmail", { calEvent });
+    return await renderEmail("OrganizerNewBookingV6Email", { calEvent, attendee });
   }
 
   protected getTextBody(
