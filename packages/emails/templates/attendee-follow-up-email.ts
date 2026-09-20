@@ -15,7 +15,8 @@ export default class AttendeeFollowUpEmail extends AttendeeScheduledEmail {
   }
 
   protected async getNodeMailerPayload(): Promise<Record<string, unknown>> {
-    const payload = await super.getNodeMailerPayload();
+    // A post-call email must not attach a CONFIRMED invite for an event that already happened.
+    const { icalEvent: _icalEvent, ...payload } = await super.getNodeMailerPayload();
     const render = this.variant === "noShow" ? renderNoShow : renderFollowUp;
     return {
       ...payload,

@@ -1,6 +1,3 @@
-import { default as cloneDeep } from "lodash/cloneDeep";
-import type { z } from "zod";
-
 import dayjs from "@calcom/dayjs";
 import type BaseEmail from "@calcom/emails/templates/_base-email";
 import type { EventNameObjectType } from "@calcom/features/eventtypes/lib/eventNaming";
@@ -12,7 +9,8 @@ import { withReporting } from "@calcom/lib/sentryWrapper";
 import { prisma } from "@calcom/prisma";
 import type { EventTypeMetaDataSchema } from "@calcom/prisma/zod-utils";
 import type { CalendarEvent, Person } from "@calcom/types/Calendar";
-
+import { default as cloneDeep } from "lodash/cloneDeep";
+import type { z } from "zod";
 import AwaitingPaymentSMS from "../sms/attendee/awaiting-payment-sms";
 import CancelledSeatSMS from "../sms/attendee/cancelled-seat-sms";
 import EventCancelledSMS from "../sms/attendee/event-cancelled-sms";
@@ -23,18 +21,20 @@ import EventRequestToRescheduleSMS from "../sms/attendee/event-request-to-resche
 import EventSuccessfullyReScheduledSMS from "../sms/attendee/event-rescheduled-sms";
 import EventSuccessfullyScheduledSMS from "../sms/attendee/event-scheduled-sms";
 import { EmailType } from "./email-types";
+import type { SummaryFields } from "./src/ticket-v6/summary";
 import AttendeeAddGuestsEmail from "./templates/attendee-add-guests-email";
 import AttendeeAwaitingPaymentEmail from "./templates/attendee-awaiting-payment-email";
 import AttendeeCancelledEmail from "./templates/attendee-cancelled-email";
 import AttendeeCancelledSeatEmail from "./templates/attendee-cancelled-seat-email";
 import AttendeeDeclinedEmail from "./templates/attendee-declined-email";
-import AttendeeLocationChangeEmail from "./templates/attendee-location-change-email";
-import AttendeeRequestEmail from "./templates/attendee-request-email";
 import AttendeeFollowUpEmail from "./templates/attendee-follow-up-email";
-import AttendeeReminderEmail from "./templates/attendee-reminder-email";
+import AttendeeLocationChangeEmail from "./templates/attendee-location-change-email";
 import type { ReminderLabel } from "./templates/attendee-reminder-email";
+import AttendeeReminderEmail from "./templates/attendee-reminder-email";
+import AttendeeRequestEmail from "./templates/attendee-request-email";
 import AttendeeRescheduledEmail from "./templates/attendee-rescheduled-email";
 import AttendeeScheduledEmail from "./templates/attendee-scheduled-email";
+import AttendeeSummaryEmail from "./templates/attendee-summary-email";
 import AttendeeUpdatedEmail from "./templates/attendee-updated-email";
 import AttendeeWasRequestedToRescheduleEmail from "./templates/attendee-was-requested-to-reschedule-email";
 import OrganizerAddGuestsEmail from "./templates/organizer-add-guests-email";
@@ -598,6 +598,15 @@ export const sendAttendeeFollowUpEmail = async (
 ) => {
   const calendarEvent = formatCalEvent(calEvent);
   await sendEmail(() => new AttendeeFollowUpEmail(calendarEvent, attendee, variant));
+};
+
+export const sendAttendeeSummaryEmail = async (
+  calEvent: CalendarEvent,
+  attendee: Person,
+  fields: SummaryFields
+) => {
+  const calendarEvent = formatCalEvent(calEvent);
+  await sendEmail(() => new AttendeeSummaryEmail(calendarEvent, attendee, fields));
 };
 
 export const sendAwaitingPaymentEmailAndSMS = async (

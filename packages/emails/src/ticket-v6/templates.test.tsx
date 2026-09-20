@@ -2,7 +2,8 @@ import process from "node:process";
 import { beforeAll, describe, expect, it } from "vitest";
 import renderEmail from "../renderEmail";
 import { bodyFragment } from "./normalize";
-import { DAY, HOUR, SAMPLE_START, sampleEvent } from "./samples";
+import { DAY, HOUR, SAMPLE_START, SAMPLE_SUMMARY, sampleEvent } from "./samples";
+import { renderSummary, type SummaryFields } from "./summary";
 import {
   countdownText,
   followUpDates,
@@ -257,5 +258,45 @@ describe("countdown image", () => {
     } finally {
       if (prev !== undefined) process.env.NEXTAUTH_SECRET = prev;
     }
+  });
+});
+
+describe("summary email", () => {
+  const fields = (over: Partial<SummaryFields> = {}) =>
+    ({ ...structuredClone(SAMPLE_SUMMARY), ...over }) as unknown as SummaryFields;
+  const render = (f: SummaryFields) => renderSummary(attendeeInput({}, start + DAY), f);
+
+  it("is email-safe, small and marked", () => {
+    const { html, subject } = render(fields());
+    expect(subject).toBe("What I heard, and where I think the brand actually sits");
+    expect(Buffer.byteLength(html)).toBeLessThan(100 * 1024);
+    expect(html).toContain('data-v6="1"');
+    expect(html).not.toMatch(/display:\s*(flex|grid)|<script|<svg/i);
+  });
+
+  it("escapes everything the host types", () => {
+    const { html } = render(fields({ problem: '<img src=x onerror="alert(1)">', quotes: ["<b>hi</b>"] }));
+    expect(html).not.toContain("<img src=x");
+    expect(html).not.toContain("<b>hi</b>");
+    expect(html).toContain("&lt;b&gt;hi&lt;/b&gt;");
+  });
+
+  it("drops the quote block when there are no quotes and the riding block when empty", () => {
+    const { html } = render(fields({ quotes: ["", "  "], riding: [] }));
+    expect(html).not.toContain("Your words");
+    expect(html).not.toContain("What is riding on it");
+  });
+
+  it("puts both markers in one cell when today and target share a position", () => {
+    const same = { premium: true, distinctive: true };
+    const { html } = render(fields({ today: same, target: same }));
+    expect(html).toContain("Acme today");
+    expect(html).toContain("Where the listing needs you");
+  });
+
+  it("switches the fit line and the slots wording", () => {
+    const { html } = render(fields({ fit: { yes: false, why: "Try Sam at Northpoint." }, slots: 1 }));
+    expect(html).toContain("No, and here is who I would send you to.");
+    expect(html).toContain("I hold one slot that week. After Friday I release them.");
   });
 });

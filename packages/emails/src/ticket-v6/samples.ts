@@ -41,3 +41,43 @@ export async function sampleEvent(overrides: Partial<CalendarEvent> = {}) {
   };
   return { calEvent, attendee, organizer, t };
 }
+
+// The design's sample for email 6, with the design's own captions.
+export const SAMPLE_SUMMARY = {
+  quotes: [
+    "We charge premium prices but we read like every other candle brand on the shelf.",
+    "We redrew the labels last year. They looked better. Sales did not move.",
+    "John Lewis will list us if the range reads as premium.",
+  ],
+  categoryNoun: "candle",
+  today: { premium: true, distinctive: false },
+  target: { premium: true, distinctive: true },
+  goal: "the listing",
+  captions: {
+    topLeft: "Distinctive, but priced like\na supermarket brand",
+    bottomLeft: "Sells on discount\nand stays there",
+  },
+  problem:
+    "Acme does not have a design problem. The pack and the site were redrawn last year and sales held flat, because the two layers underneath were never settled. A premium price with a category-standard story reads as a contradiction, and a buyer resolves that contradiction by asking for a discount.",
+  stack: [
+    { settled: false, note: "never settled" },
+    { settled: false, note: "never settled" },
+    { settled: true, note: "redrawn last year" },
+    { settled: true, note: "redrawn last year" },
+  ],
+  riding: [
+    { title: "The listing", text: "You put it at a mid-six-figure line if the range is accepted." },
+    { title: "The Q1 window", text: "Miss the buyer and the next window is a year out." },
+    { title: "A third attempt", text: "Another redraw that does not move sales costs more than the fee." },
+  ],
+  fit: {
+    yes: true,
+    why: "I have repositioned four home and food brands before a retail listing. If I thought another label redraw would fix this, I would have said so on the call.",
+  },
+  nextTitle: "What holding the price is worth",
+  nextBody:
+    "Before I put a number on anything, we work out what the listing and the held price are worth to Acme, and what missing them costs. I write the proposal after that conversation, not before it.",
+  deadline: "2026-10-02",
+  slots: 2,
+  bookingLink: "https://cal.designinnsaeit.com/vineeth/next",
+} as const;
