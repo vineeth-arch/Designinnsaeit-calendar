@@ -4,7 +4,8 @@ import { WEBAPP_URL } from "@calcom/lib/constants";
 import { beforeAll, describe, expect, it } from "vitest";
 import { BOOKING_HOST } from "./context";
 import { bodyFragment, diffHtml } from "./normalize";
-import { DAY, HOUR, SAMPLE_START, sampleEvent } from "./samples";
+import { DAY, HOUR, SAMPLE_START, SAMPLE_SUMMARY, sampleEvent } from "./samples";
+import { renderSummary } from "./summary";
 import {
   renderConfirmation,
   renderFollowUp,
@@ -77,6 +78,11 @@ const cases = [
     name: "follow-up",
     fixture: "followup",
     render: () => renderFollowUp(input("attendee", start + 2 * HOUR)),
+  },
+  {
+    name: "summary",
+    fixture: "recap",
+    render: () => renderSummary(input("attendee", start + DAY), structuredClone(SAMPLE_SUMMARY) as never),
   },
 ];
 
