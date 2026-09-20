@@ -7,6 +7,7 @@ import { bodyFragment, diffHtml } from "./normalize";
 import { DAY, HOUR, SAMPLE_START, sampleEvent } from "./samples";
 import {
   renderConfirmation,
+  renderFollowUp,
   renderHostAlert,
   renderReminder1h,
   renderReminder24h,
@@ -71,6 +72,11 @@ const cases = [
     name: "1h reminder",
     fixture: "reminder1",
     render: () => renderReminder1h(input("attendee", start - (HOUR - 18_000))),
+  },
+  {
+    name: "follow-up",
+    fixture: "followup",
+    render: () => renderFollowUp(input("attendee", start + 2 * HOUR)),
   },
 ];
 

@@ -591,9 +591,13 @@ export const sendAttendeeReminderEmail = async (
   await sendEmail(() => new AttendeeReminderEmail(calendarEvent, attendee, reminderLabel));
 };
 
-export const sendAttendeeFollowUpEmail = async (calEvent: CalendarEvent, attendee: Person) => {
+export const sendAttendeeFollowUpEmail = async (
+  calEvent: CalendarEvent,
+  attendee: Person,
+  variant: "followUp" | "noShow" = "followUp"
+) => {
   const calendarEvent = formatCalEvent(calEvent);
-  await sendEmail(() => new AttendeeFollowUpEmail(calendarEvent, attendee));
+  await sendEmail(() => new AttendeeFollowUpEmail(calendarEvent, attendee, variant));
 };
 
 export const sendAwaitingPaymentEmailAndSMS = async (

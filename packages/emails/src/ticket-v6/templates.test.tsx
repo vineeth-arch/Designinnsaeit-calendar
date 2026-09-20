@@ -4,8 +4,11 @@ import { bodyFragment } from "./normalize";
 import { DAY, HOUR, SAMPLE_START, sampleEvent } from "./samples";
 import {
   countdownText,
+  followUpDates,
   renderConfirmation,
+  renderFollowUp,
   renderHostAlert,
+  renderNoShow,
   renderReminder1h,
   renderReminder24h,
   type V6Input,
@@ -45,6 +48,12 @@ const renderers = [
     run: (i: V6Input) => renderReminder1h(i),
     input: () => attendeeInput({}, start - HOUR),
   },
+  {
+    name: "follow-up",
+    run: (i: V6Input) => renderFollowUp(i),
+    input: () => attendeeInput({}, start + 2 * HOUR),
+  },
+  { name: "no-show", run: (i: V6Input) => renderNoShow(i), input: () => attendeeInput({}, start + 2 * HOUR) },
 ];
 
 describe("v6 emails: hygiene", () => {
@@ -182,5 +191,29 @@ describe("v6 emails: regression guard", () => {
     expect(html).toContain('data-v6="1"');
     expect(html).not.toContain("<script");
     expect(bodyFragment(html)).toContain("Jordan, you are booked.");
+  });
+});
+
+describe("follow-up dates", () => {
+  it("skips the weekend in the host's zone", () => {
+    // Fri 25 Sep 2026 10:00 UTC (15:30 IST): +1 working day = Mon 28, +2 = Tue 29
+    const { due, replyBy } = followUpDates("2026-09-25T10:00:00.000Z", "Asia/Kolkata");
+    expect(replyBy.format("ddd D")).toBe("Mon 28");
+    expect(due.format("ddd D")).toBe("Tue 29");
+  });
+  it("counts Mon call: reply Tue, summary Wed", () => {
+    const { due, replyBy } = followUpDates("2026-09-21T10:00:00.000Z", "Asia/Kolkata");
+    expect(replyBy.format("ddd D")).toBe("Tue 22");
+    expect(due.format("ddd D")).toBe("Wed 23");
+  });
+});
+
+describe("no-show variant", () => {
+  it("has its own subject, status and one button", () => {
+    const r = renderNoShow(attendeeInput({}, start + 2 * HOUR));
+    expect(r.subject).toBe("We missed each other today");
+    expect(r.html).toContain("MISSED CALL");
+    expect(r.html).toContain("Pick a new time");
+    expect(r.html).not.toContain("here is what happens next");
   });
 });

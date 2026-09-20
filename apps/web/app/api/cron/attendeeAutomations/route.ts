@@ -12,6 +12,8 @@ import prisma, { bookingMinimalSelect } from "@calcom/prisma";
 import { BookingStatus } from "@calcom/prisma/enums";
 import type { CalendarEvent } from "@calcom/types/Calendar";
 
+import { pickFollowUpVariant } from "./followUpVariant";
+
 // Attendee-side automations that the (removed) Workflows engine used to cover.
 // A single cron pass sends: a 24h reminder, a 1h reminder, and a post-call
 // follow-up. De-dup is windowed — each job matches a non-overlapping 15-minute
@@ -55,6 +57,7 @@ async function postHandler(request: NextRequest) {
       select: {
         ...bookingMinimalSelect,
         location: true,
+        noShowHost: true,
         responses: true,
         uid: true,
         destinationCalendar: true,
@@ -76,6 +79,7 @@ async function postHandler(request: NextRequest) {
 
       const attendeesList = await Promise.all(
         booking.attendees.map(async (attendee) => ({
+          noShow: attendee.noShow,
           name: attendee.name,
           email: attendee.email,
           timeZone: attendee.timeZone,
@@ -111,11 +115,16 @@ async function postHandler(request: NextRequest) {
         minimumRescheduleNotice: booking.eventType?.minimumRescheduleNotice ?? null,
       };
 
-      for (const attendee of attendeesList) {
+      for (const { noShow, ...attendee } of attendeesList) {
         if (job.kind === "reminder") {
           await sendAttendeeReminderEmail(evt, attendee, job.label);
         } else {
-          await sendAttendeeFollowUpEmail(evt, attendee);
+          const variant = pickFollowUpVariant({
+            noShowHost: booking.noShowHost,
+            attendeeNoShow: noShow,
+          });
+          if (!variant) continue;
+          await sendAttendeeFollowUpEmail(evt, attendee, variant);
         }
         emailsSent++;
       }

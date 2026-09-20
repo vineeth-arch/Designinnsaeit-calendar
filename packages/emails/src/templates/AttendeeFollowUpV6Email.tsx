@@ -1,0 +1,22 @@
+import type { CalendarEvent, Person } from "@calcom/types/Calendar";
+import RawHtml from "../components/RawHtml";
+import { renderFollowUp } from "../ticket-v6/templates";
+
+// v6 booking-email design. All markup lives in ticket-v6; this only adapts props for renderEmail.
+export const AttendeeFollowUpV6Email = (props: {
+  calEvent: CalendarEvent;
+  attendee: Person;
+  now?: number;
+}) => (
+  <RawHtml
+    html={
+      renderFollowUp({
+        calEvent: props.calEvent,
+        recipient: props.attendee,
+        timeZone: props.attendee.timeZone,
+        timeFormat: props.attendee.timeFormat,
+        now: props.now,
+      }).html
+    }
+  />
+);
