@@ -4914,5 +4914,9 @@
   "summary_composer_sent_test": "Test sent to your inbox.",
   "summary_composer_sent_attendee": "Sent to the attendee.",
   "summary_composer_error": "Could not do that. Check every required field, or try again in a minute.",
+  "no_show_card_title": "No-show follow-up",
+  "email_preview_no_show_caption": "Sent instead of the follow-up when the attendee is marked as a no-show.",
+  "summary_card_title": "Summary (you write it)",
+  "email_preview_summary_caption": "Written by you after the call and sent from the summary composer. Sample content shown.",
   "ADD_NEW_STRINGS_ABOVE_THIS_LINE_TO_PREVENT_MERGE_CONFLICTS": "↑↑↑↑↑↑↑↑↑↑↑↑↑ Add your new strings above here ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
 }

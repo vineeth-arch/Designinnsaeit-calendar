@@ -120,6 +120,9 @@ export default function IntegrationsAutomationsView(props: Props) {
               />
             </div>
           ))}
+          <Button href="/settings/integrations-automations/summary" className="self-start">
+            {t("summary_composer_title")}
+          </Button>
         </div>
       ) : (
         <div className="flex flex-col gap-6">

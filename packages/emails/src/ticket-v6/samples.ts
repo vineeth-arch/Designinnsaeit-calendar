@@ -1,5 +1,6 @@
 import { getTranslation } from "@calcom/i18n/server";
 import type { CalendarEvent, Person } from "@calcom/types/Calendar";
+import type { SummaryFields } from "./summary";
 
 // The design's sample booking: Jordan Lee of Acme Studio, Monday 21 September 2026, 10:30am BST (3:00pm IST).
 export const SAMPLE_START = "2026-09-21T09:30:00.000Z";
@@ -43,7 +44,7 @@ export async function sampleEvent(overrides: Partial<CalendarEvent> = {}) {
 }
 
 // The design's sample for email 6, with the design's own captions.
-export const SAMPLE_SUMMARY = {
+export const SAMPLE_SUMMARY: SummaryFields = {
   quotes: [
     "We charge premium prices but we read like every other candle brand on the shelf.",
     "We redrew the labels last year. They looked better. Sales did not move.",
@@ -80,4 +81,4 @@ export const SAMPLE_SUMMARY = {
   deadline: "2026-10-02",
   slots: 2,
   bookingLink: "https://cal.designinnsaeit.com/vineeth/next",
-} as const;
+};

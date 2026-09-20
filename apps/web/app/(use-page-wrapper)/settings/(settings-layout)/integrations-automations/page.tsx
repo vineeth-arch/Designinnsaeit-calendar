@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import renderEmail from "@calcom/emails/src/renderEmail";
+import { SAMPLE_SUMMARY } from "@calcom/emails/src/ticket-v6/samples";
 import { getServerSession } from "@calcom/features/auth/lib/getServerSession";
 import { getTranslation } from "@calcom/i18n/server";
 import prisma from "@calcom/prisma";
@@ -48,12 +49,14 @@ const buildEmailPreviews = async () => {
   // Fixed clocks so each preview shows its own moment (3 days out, a day out, an hour out).
   const start = new Date(calEvent.startTime).getTime();
   const hour = 3_600_000;
-  const [confirmation, newBooking, reminder24h, reminder1h, followUp] = await Promise.all([
+  const [confirmation, newBooking, reminder24h, reminder1h, followUp, noShow, summary] = await Promise.all([
     renderEmail("AttendeeConfirmationV6Email", { calEvent, attendee, now: start - 72 * hour }),
     renderEmail("OrganizerNewBookingV6Email", { calEvent, attendee, now: start - 72 * hour }),
     renderEmail("AttendeeReminder24hV6Email", { calEvent, attendee, now: start - 24 * hour }),
     renderEmail("AttendeeReminder1hV6Email", { calEvent, attendee, now: start - hour + 18_000 }),
     renderEmail("AttendeeFollowUpV6Email", { calEvent, attendee }),
+    renderEmail("AttendeeNoShowV6Email", { calEvent, attendee }),
+    renderEmail("AttendeeSummaryV6Email", { calEvent, attendee, fields: SAMPLE_SUMMARY }),
   ]);
 
   return [
@@ -65,6 +68,8 @@ const buildEmailPreviews = async () => {
     { title: t("reminder_24h_card_title"), caption: t("email_preview_24h_caption"), html: reminder24h },
     { title: t("reminder_1h_card_title"), caption: t("email_preview_1h_caption"), html: reminder1h },
     { title: t("follow_up_card_title"), caption: t("email_preview_follow_up_caption"), html: followUp },
+    { title: t("no_show_card_title"), caption: t("email_preview_no_show_caption"), html: noShow },
+    { title: t("summary_card_title"), caption: t("email_preview_summary_caption"), html: summary },
   ];
 };
 
