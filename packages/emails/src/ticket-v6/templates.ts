@@ -1,3 +1,5 @@
+import dayjs from "@calcom/dayjs";
+import { WEBAPP_URL } from "@calcom/lib/constants";
 import type { TimeFormat } from "@calcom/lib/timeFormat";
 import type { CalendarEvent, Person } from "@calcom/types/Calendar";
 import {
@@ -11,6 +13,7 @@ import {
   frame,
   header,
   keyValueRows,
+  dateLeaf as leaf,
   link,
   pageNote,
   paragraph,
@@ -25,6 +28,7 @@ import {
 } from "./blocks";
 import { BOOKING_HOST, buildContext, stripProtocol, type V6Context, withProtocol } from "./context";
 import { HOST, PREHEADERS, SUBJECTS } from "./copy";
+import { addWorkingDays } from "./derive";
 import { S } from "./styles";
 
 export type V6Input = {
@@ -372,3 +376,104 @@ export function renderReminder1h(input: V6Input): V6Rendered {
 }
 
 const relativeDayForLine = (c: V6Context) => c.relativeDay;
+
+// ---------------------------------------------------------------------------------------------------
+// 5. Follow-up after the call, and the no-show variant (derived: the design only describes it in words)
+// ---------------------------------------------------------------------------------------------------
+const NBSP = "&nbsp;";
+
+/** Torn paper edge between the letter and the stub. */
+const tornEdge = () =>
+  `<tr><td bgcolor="#FBF9F3" style="${S.S135}"><table ${T0} width="100%" style="${S.S35}"><tr>${`<td style="${S.S136}"><div style="${S.S137}">${NBSP}</div></td>`.repeat(26)}</tr></table></td></tr>`;
+
+function callStub(c: V6Context, badge: string) {
+  const range = `${c.leaf.weekday.slice(0, 3)} ${c.leaf.day} ${c.leaf.month} ${dayjs(c.startIso).tz(c.tz).format("YYYY")}, ${c.time.start.replace(/(am|pm)$/, "")} to ${c.time.end} ${c.attendeeZoneAbbr}`;
+  const left = `<td valign="top">${paragraph(S.S138, `Brand strategy call with ${esc(HOST.firstName)}`)}${paragraph(S.S27, esc(range))}${spacer.s14}${bookingStrip("BOOKING", c.reference)}</td>`;
+  const right = `<td width="112" valign="top" style="${S.S139}"><table ${T0} align="right" style="${S.S140}"><tr><td style="${S.S141}">${esc(badge)}</td></tr></table></td>`;
+  return `<tr><td bgcolor="#FBF9F3" style="${S.S56}"><table ${T0} width="100%" style="${S.S2}"><tr>${left}${right}</tr></table></td></tr>`;
+}
+
+/** Summary is due 2 working days after the call and the reply-by is 1 working day after, in the host's zone. */
+export function followUpDates(endIso: string, hostTz: string) {
+  return {
+    due: addWorkingDays(endIso, 2, hostTz),
+    replyBy: addWorkingDays(endIso, 1, hostTz),
+  };
+}
+
+const longDate = (d: dayjs.Dayjs) => d.format("dddd D MMMM");
+
+function followUpFrame(
+  c: V6Context,
+  status: string,
+  tracker_: 2 | 3,
+  body: string,
+  badge: string,
+  note: string
+) {
+  return frame(
+    header(status) + tracker(tracker_) + bodyRow(body) + tornEdge() + callStub(c, badge) + footer(note)
+  );
+}
+
+export function renderFollowUp(input: V6Input): V6Rendered {
+  const c = ctxOf(input);
+  const subject = SUBJECTS.followUp();
+  const { due, replyBy } = followUpDates(c.endIso, c.hostTz);
+  const dueText = longDate(due.tz(c.tz));
+  const replyText = longDate(replyBy.tz(c.tz));
+
+  const cards = cardGrid([
+    { number: 1, title: "What I heard", text: "Your situation in your own words, so you can correct me." },
+    {
+      number: 2,
+      title: "Where the brand sits",
+      text: "The position you hold today, and the gap to the one you want.",
+    },
+    { number: 3, title: "Whether I am the fit", text: "If I am not, I will say so and point you elsewhere." },
+  ]);
+  const ask = `<table ${T0} width="100%" style="${S.S2}"><tr><td bgcolor="#FFE3EE" style="${S.S133}">${paragraph(S.S113, "One ask before then")}${paragraph(S.S134, esc(`If something came to mind after we hung up, reply by ${replyText}. It goes into the page.`))}</td></tr></table>`;
+  const dueLeaf = dayjs(due.tz(c.tz));
+  const when = `<table ${T0} width="100%" style="${S.S2}"><tr><td width="84" valign="top" style="${S.S19}">${dateLeafOf(dueLeaf)}</td><td width="18" style="${S.S24}">${NBSP}</td><td valign="top">${paragraph(S.S132, esc(`By ${dueLeaf.format("dddd")} you get my read on the brand.`))}${paragraph(S.S106, esc(`One page, in your inbox before 6:00pm ${c.zoneShort}.`))}</td></tr></table>`;
+
+  const body = `${paragraph(S.S16, esc(`${c.first}, here is what happens next.`))}${spacer.s20}${when}${spacer.s18}${cards}${spacer.s18}${ask}`;
+  const callDay = dayjs(c.startIso).tz(c.tz).format("dddd D MMMM");
+  const fragment =
+    preheader(PREHEADERS.followUp({ dueDate: dueText })) +
+    followUpFrame(
+      c,
+      "AFTER OUR CALL",
+      3,
+      body,
+      "CALL HELD",
+      `You are getting this because we spoke on ${callDay}.`
+    );
+  return { subject, html: emailDocument(subject, fragment) };
+}
+
+function dateLeafOf(d: dayjs.Dayjs) {
+  return leaf(d.format("MMM"), d.format("D"), d.format("dddd"));
+}
+
+export function renderNoShow(input: V6Input): V6Rendered {
+  const c = ctxOf(input);
+  const subject = SUBJECTS.noShow();
+  const rebook =
+    c.rescheduleUrl ??
+    (input.calEvent.organizer.username
+      ? `${input.calEvent.bookerUrl ?? WEBAPP_URL}/${input.calEvent.organizer.username}`
+      : (c.bookingUrl ?? WEBAPP_URL));
+  const callDay = dayjs(c.startIso).tz(c.tz).format("dddd D MMMM");
+  const body = `${paragraph(S.S16, esc(`${c.first}, we missed each other today.`))}${spacer.s20}${paragraph(S.S17, esc(`I was on the call at ${c.time.start} ${c.zoneShort} and did not see you. It happens. Nothing to apologise for, and nothing you need to prepare.`))}${spacer.s22}${primaryButton(rebook, "Pick a new time")}${paragraph(S.S31, "It takes under a minute. The same 30 minutes, whenever suits you.")}`;
+  const fragment =
+    preheader("No harm done. Pick a new time whenever suits.") +
+    followUpFrame(
+      c,
+      "MISSED CALL",
+      2,
+      body,
+      "CALL MISSED",
+      `You are getting this because you booked a call for ${callDay}.`
+    );
+  return { subject, html: emailDocument(subject, fragment) };
+}

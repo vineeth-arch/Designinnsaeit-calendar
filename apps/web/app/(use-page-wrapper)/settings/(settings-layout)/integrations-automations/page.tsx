@@ -53,7 +53,7 @@ const buildEmailPreviews = async () => {
     renderEmail("OrganizerNewBookingV6Email", { calEvent, attendee, now: start - 72 * hour }),
     renderEmail("AttendeeReminder24hV6Email", { calEvent, attendee, now: start - 24 * hour }),
     renderEmail("AttendeeReminder1hV6Email", { calEvent, attendee, now: start - hour + 18_000 }),
-    renderEmail("AttendeeFollowUpEmail", { calEvent, attendee }),
+    renderEmail("AttendeeFollowUpV6Email", { calEvent, attendee }),
   ]);
 
   return [

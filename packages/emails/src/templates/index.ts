@@ -48,6 +48,8 @@ export { VerifyAccountEmail } from "./VerifyAccountEmail";
 export { VerifyEmailByCode } from "./VerifyEmailByCode";
 export { VerifyEmailChangeEmail } from "./VerifyEmailChangeEmail";
 export { AttendeeConfirmationV6Email } from "./AttendeeConfirmationV6Email";
+export { AttendeeFollowUpV6Email } from "./AttendeeFollowUpV6Email";
+export { AttendeeNoShowV6Email } from "./AttendeeNoShowV6Email";
 export { AttendeeReminder1hV6Email } from "./AttendeeReminder1hV6Email";
 export { AttendeeReminder24hV6Email } from "./AttendeeReminder24hV6Email";
 export { OrganizerNewBookingV6Email } from "./OrganizerNewBookingV6Email";
