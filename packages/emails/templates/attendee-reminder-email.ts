@@ -1,6 +1,7 @@
 import type { CalendarEvent, Person } from "@calcom/types/Calendar";
 
 import renderEmail from "../src/renderEmail";
+import { renderReminder1h, renderReminder24h } from "../src/ticket-v6/templates";
 import AttendeeScheduledEmail from "./attendee-scheduled-email";
 
 export type ReminderLabel = "24h" | "1h";
@@ -18,16 +19,25 @@ export default class AttendeeReminderEmail extends AttendeeScheduledEmail {
     const payload = await super.getNodeMailerPayload();
     return {
       ...payload,
-      subject: this.t("reminder_email_subject", { title: this.calEvent.title }),
+      subject: this.getReminderSubject(),
     };
   }
 
+  private getReminderSubject(): string {
+    const render = this.reminderLabel === "1h" ? renderReminder1h : renderReminder24h;
+    return render({
+      calEvent: this.calEvent,
+      recipient: this.attendee,
+      timeZone: this.attendee.timeZone,
+      timeFormat: this.attendee.timeFormat,
+    }).subject;
+  }
+
   async getHtml(calEvent: CalendarEvent, attendee: Person) {
-    return await renderEmail("AttendeeReminderEmail", {
-      calEvent,
-      attendee,
-      reminderLabel: this.reminderLabel,
-    });
+    return await renderEmail(
+      this.reminderLabel === "1h" ? "AttendeeReminder1hV6Email" : "AttendeeReminder24hV6Email",
+      { calEvent, attendee }
+    );
   }
 
   protected getTextBody(): string {

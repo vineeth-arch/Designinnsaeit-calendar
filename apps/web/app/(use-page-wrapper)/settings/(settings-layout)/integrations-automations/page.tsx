@@ -16,37 +16,43 @@ import IntegrationsAutomationsView from "~/settings/integrations-automations/int
 
 const buildEmailPreviews = async () => {
   const t = await getTranslation("en", "common");
-  const person = (name: string, email: string): Person => ({
+  const person = (name: string, email: string, timeZone: string): Person => ({
     name,
     email,
-    timeZone: "Europe/London",
+    timeZone,
     language: { translate: t, locale: "en" },
   });
-  const attendee = person("Jordan Lee", "jordan@acme.studio");
+  const attendee = person("Jordan Lee", "jordan@acme.studio", "Europe/London");
   const intake = {
     brand: { label: "Brand", value: "Acme Studio" },
+    category: { label: "Category", value: "home fragrance" },
     website: { label: "Website", value: "acme.studio" },
     country: { label: "Country", value: "United Kingdom" },
   };
   const calEvent: CalendarEvent = {
-    type: "Discovery Call",
-    title: "Discovery Call between Design Innsæit and Jordan Lee",
-    startTime: "2026-07-15T09:30:00.000Z",
-    endTime: "2026-07-15T10:00:00.000Z",
-    organizer: person("Design Innsæit", "hello@designinnsaeit.com"),
+    type: "Brand strategy call",
+    title: "Brand strategy call between Design Innsæit and Jordan Lee",
+    startTime: "2026-09-21T09:30:00.000Z",
+    endTime: "2026-09-21T10:00:00.000Z",
+    organizer: person("Vineeth", "hello@designinnsaeit.com", "Asia/Kolkata"),
     attendees: [attendee],
     location: "https://meet.google.com/abc-defg-hij",
-    description: "Intro call to scope your project.",
+    additionalNotes:
+      "We charge premium prices but we read like every other candle brand on the shelf, so we end up discounting to shift stock.",
+    minimumRescheduleNotice: 24 * 60,
     uid: "preview-sample",
     responses: intake,
     userFieldsResponses: intake,
   };
 
+  // Fixed clocks so each preview shows its own moment (3 days out, a day out, an hour out).
+  const start = new Date(calEvent.startTime).getTime();
+  const hour = 3_600_000;
   const [confirmation, newBooking, reminder24h, reminder1h, followUp] = await Promise.all([
-    renderEmail("AttendeeTicketConfirmationEmail", { calEvent, attendee }),
-    renderEmail("OrganizerTicketNewBookingEmail", { calEvent }),
-    renderEmail("AttendeeReminderEmail", { calEvent, attendee, reminderLabel: "24h" }),
-    renderEmail("AttendeeReminderEmail", { calEvent, attendee, reminderLabel: "1h" }),
+    renderEmail("AttendeeConfirmationV6Email", { calEvent, attendee, now: start - 72 * hour }),
+    renderEmail("OrganizerNewBookingV6Email", { calEvent, attendee, now: start - 72 * hour }),
+    renderEmail("AttendeeReminder24hV6Email", { calEvent, attendee, now: start - 24 * hour }),
+    renderEmail("AttendeeReminder1hV6Email", { calEvent, attendee, now: start - hour + 18_000 }),
     renderEmail("AttendeeFollowUpEmail", { calEvent, attendee }),
   ]);
 

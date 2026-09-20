@@ -19,6 +19,19 @@ export function timeRange(startIso: string, endIso: string, timeZone: string, tw
   return { start: dayjs(startIso).tz(timeZone).format(fmt), end: dayjs(endIso).tz(timeZone).format(fmt) };
 }
 
+const ABBR_OVERRIDE: Record<string, string> = { "Asia/Kolkata": "IST", "Asia/Calcutta": "IST" };
+
+/** Short zone name as an English reader expects it (BST, GMT, IST). Intl only knows "GMT+5:30" for India. */
+export function zoneAbbreviation(timeZone: string, iso: string): string {
+  return (
+    ABBR_OVERRIDE[timeZone] ??
+    new Intl.DateTimeFormat("en-GB", { timeZone, timeZoneName: "short" })
+      .formatToParts(new Date(iso))
+      .find((p) => p.type === "timeZoneName")?.value ??
+    timeZone
+  );
+}
+
 // Friendly zone names for the zones this studio actually deals with; anything else falls back to Intl.
 export function tzLabel(timeZone: string, iso: string): string {
   const abbr = (locale: string) =>
@@ -63,7 +76,7 @@ const BAR_PATTERN = [5, 5, 2, 2, 2, 4, 4, 3];
 const BAR_PHASE = 581 % BAR_PATTERN.length;
 
 export function barcodeWidths(reference: string, bars = 16): number[] {
-  const sum = [...reference].reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+  const sum = reference.split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
   const offset = (((sum - BAR_PHASE) % BAR_PATTERN.length) + BAR_PATTERN.length) % BAR_PATTERN.length;
   return Array.from({ length: bars }, (_, i) => BAR_PATTERN[(i + offset) % BAR_PATTERN.length]);
 }

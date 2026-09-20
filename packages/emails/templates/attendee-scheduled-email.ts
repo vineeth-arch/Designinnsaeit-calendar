@@ -6,6 +6,7 @@ import type { TFunction } from "i18next";
 import { default as cloneDeep } from "lodash/cloneDeep";
 import generateIcsFile, { GenerateIcsRole } from "../lib/generateIcsFile";
 import renderEmail from "../src/renderEmail";
+import { renderConfirmation } from "../src/ticket-v6/templates";
 import BaseEmail from "./_base-email";
 
 export default class AttendeeScheduledEmail extends BaseEmail {
@@ -51,18 +52,33 @@ export default class AttendeeScheduledEmail extends BaseEmail {
         this.calEvent,
         this.calEvent.attendees.filter(({ email }) => email !== this.attendee.email).map(({ email }) => email)
       ),
-      subject: `${this.calEvent.title}`,
+      subject: this.getSubject(),
       html: await this.getHtml(clonedCalEvent, this.attendee),
       text: this.getTextBody(),
     };
   }
 
+  // The v6 design applies to the plain confirmation only. Subclasses (cancelled, rescheduled, ...) and
+  // recurring series keep their existing layout and subject.
+  private usesV6Layout(): boolean {
+    return this.name === "SEND_BOOKING_CONFIRMATION" && !this.calEvent.recurringEvent?.count;
+  }
+
+  protected getSubject(): string {
+    if (!this.usesV6Layout()) return `${this.calEvent.title}`;
+    return renderConfirmation({
+      calEvent: this.calEvent,
+      recipient: this.attendee,
+      timeZone: this.attendee.timeZone,
+      timeFormat: this.attendee.timeFormat,
+    }).subject;
+  }
+
   async getHtml(calEvent: CalendarEvent, attendee: Person) {
-    // Recurring series keep the detailed layout: the ticket shows a single occurrence only.
-    if (calEvent.recurringEvent?.count) {
+    if (!this.usesV6Layout()) {
       return await renderEmail("AttendeeScheduledEmail", { calEvent, attendee });
     }
-    return await renderEmail("AttendeeTicketConfirmationEmail", { calEvent, attendee });
+    return await renderEmail("AttendeeConfirmationV6Email", { calEvent, attendee });
   }
 
   protected getTextBody(title = "", subtitle = "emailed_you_and_any_other_attendees"): string {
