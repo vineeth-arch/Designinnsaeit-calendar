@@ -4607,6 +4607,7 @@
   "onboarding_teams_browser_view_no_teams_title": "No teams yet",
   "onboarding_teams_browser_view_no_teams_description": "Add teams to get started",
   "book_now": "Book now",
+  "book_event": "Book event",
   "only_available_on_orgs_plan": "This feature is available on the Organization plan",
   "upgrade_team_to_orgs_with_price": "Upgrade your team to get access to this and much more for $37 per month/user.",
   "attribute_based_routing": "Attribute-based routing",

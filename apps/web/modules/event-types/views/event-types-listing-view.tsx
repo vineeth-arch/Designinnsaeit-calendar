@@ -913,7 +913,13 @@ const CreateFirstEventTypeView = ({ slug, searchTerm }: { slug: string; searchTe
   );
 };
 
-const CTA = ({ profileOptions }: { profileOptions: ProfileOption[] }) => {
+const CTA = ({
+  profileOptions,
+  personalBookingHref,
+}: {
+  profileOptions: ProfileOption[];
+  personalBookingHref: string | null;
+}) => {
   const { t } = useLocale();
   const { searchTerm, setSearchTerm } = useSearchContext();
 
@@ -933,6 +939,16 @@ const CTA = ({ profileOptions }: { profileOptions: ProfileOption[] }) => {
         }}
         placeholder={t("search")}
       />
+      {personalBookingHref && (
+        <Button
+          data-testid="book-event"
+          color="secondary"
+          StartIcon="calendar"
+          href={personalBookingHref}
+          target="_blank">
+          {t("book_event")}
+        </Button>
+      )}
       <Button
         data-testid="new-event-type"
         href={`?dialog=new&eventPage=${profileOptions[0]?.slug ?? ""}`}>
@@ -1046,7 +1062,13 @@ export const EventTypesCTA = ({ userEventGroupsData }: Omit<Props, "user">) => {
         };
       }) ?? [];
 
-  return <CTA profileOptions={profileOptions} />;
+  const personalGroup = userEventGroupsData.eventTypeGroups?.find((group) => !group.teamId);
+  const personalBookingHref =
+    personalGroup?.bookerUrl && personalGroup.profile.slug
+      ? `${personalGroup.bookerUrl}/${personalGroup.profile.slug}`
+      : null;
+
+  return <CTA profileOptions={profileOptions} personalBookingHref={personalBookingHref} />;
 };
 
 const EventTypesPage = ({ userEventGroupsData, user }: Props) => {
