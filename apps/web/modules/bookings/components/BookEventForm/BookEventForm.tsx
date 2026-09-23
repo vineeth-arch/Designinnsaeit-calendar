@@ -20,6 +20,7 @@ import { useMemo, useState } from "react";
 import type { FieldError } from "react-hook-form";
 import type { IUseBookingErrors, IUseBookingLoadingStates } from "../../hooks/useBookings";
 import { BookingFields } from "./BookingFields";
+import { GoogleContactsProvider } from "./GoogleContactsProvider";
 import { FormSkeleton } from "./Skeleton";
 
 type BookEventFormProps = {
@@ -110,6 +111,18 @@ export const BookEventForm = ({
 
   const watchedCfToken = bookingForm.watch("cfToken");
 
+  const bookingFields = (
+    <BookingFields
+      isDynamicGroupBooking={!!(username && username.indexOf("+") > -1)}
+      fields={eventType.bookingFields}
+      locations={eventType.locations}
+      rescheduleUid={rescheduleUid || undefined}
+      bookingData={bookingData}
+      isPaidEvent={isPaidEvent}
+      paymentCurrency={paymentCurrency}
+    />
+  );
+
   return (
     <div className="flex flex-col h-full">
       <Form
@@ -148,15 +161,12 @@ export const BookEventForm = ({
           </div>
         )}
         <div className="[&_label]:text-subtle [&_label]:text-[11px] [&_label]:font-bold [&_label]:uppercase [&_label]:tracking-[0.08em]">
-          <BookingFields
-            isDynamicGroupBooking={!!(username && username.indexOf("+") > -1)}
-            fields={eventType.bookingFields}
-            locations={eventType.locations}
-            rescheduleUid={rescheduleUid || undefined}
-            bookingData={bookingData}
-            isPaidEvent={isPaidEvent}
-            paymentCurrency={paymentCurrency}
-          />
+          {isPlatform ? (
+            bookingFields
+          ) : (
+            // Platform atoms have no next-auth SessionProvider, so the contacts query must not run there.
+            <GoogleContactsProvider>{bookingFields}</GoogleContactsProvider>
+          )}
         </div>
         {errors.hasFormErrors || errors.hasDataErrors ? (
           <div data-testid="booking-fail">
