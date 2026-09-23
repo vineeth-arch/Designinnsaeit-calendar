@@ -1,25 +1,25 @@
-import { useEffect } from "react";
-import type { z } from "zod";
-
+import { propsTypes } from "@calcom/features/form-builder/propsTypes";
+import { preprocessNameFieldDataWithVariant } from "@calcom/features/form-builder/utils";
 import type {
   SelectLikeComponentProps,
   TextLikeComponentProps,
 } from "@calcom/features/form-builder/widget-types";
 import Widgets from "@calcom/features/form-builder/widgets";
-import PhoneInput from "@calcom/web/components/phone-input";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
-import type { fieldSchema, variantsConfigSchema, FieldType } from "@calcom/prisma/zod-utils";
+import type { FieldType, fieldSchema, variantsConfigSchema } from "@calcom/prisma/zod-utils";
 import { AddressInput } from "@calcom/ui/components/address";
 import { InfoBadge } from "@calcom/ui/components/badge";
 import { Button } from "@calcom/ui/components/button";
-import { Label, CheckboxField, EmailField, InputField, Checkbox } from "@calcom/ui/components/form";
-import { RadioGroup, RadioField } from "@calcom/ui/components/radio";
+import { Checkbox, CheckboxField, EmailField, InputField, Label } from "@calcom/ui/components/form";
+import { RadioField, RadioGroup } from "@calcom/ui/components/radio";
 import { Tooltip } from "@calcom/ui/components/tooltip";
+import PhoneInput from "@calcom/web/components/phone-input";
+import { ContactEmailInput } from "@calcom/web/modules/bookings/components/BookEventForm/ContactEmailInput";
+import { useGoogleContacts } from "@calcom/web/modules/bookings/components/BookEventForm/GoogleContactsProvider";
 import { XIcon } from "@coss/ui/icons";
-
+import { useEffect } from "react";
+import type { z } from "zod";
 import { ComponentForField } from "./FormBuilderField";
-import { propsTypes } from "@calcom/features/form-builder/propsTypes";
-import { preprocessNameFieldDataWithVariant } from "@calcom/features/form-builder/utils";
 
 export const isValidValueProp: Record<Component["propsType"], (val: unknown) => boolean> = {
   boolean: (val) => typeof val === "boolean",
@@ -209,9 +209,25 @@ export const Components: Record<FieldType, Component> = {
   },
   email: {
     propsType: propsTypes.email,
-    factory: (props) => {
+    factory: function EmailFactory(props) {
+      const googleContacts = useGoogleContacts();
       if (!props) {
         return <div />;
+      }
+
+      if (googleContacts && !props.readOnly) {
+        return (
+          <ContactEmailInput
+            id={props.name ?? ""}
+            name={props.name}
+            value={props.value ?? ""}
+            onChange={(email) => props.setValue(email)}
+            placeholder={props.placeholder}
+            disabled={props.readOnly}
+            contacts={googleContacts.contacts}
+            needsGoogleConsent={googleContacts.needsGoogleConsent}
+          />
+        );
       }
 
       return (
@@ -247,6 +263,7 @@ export const Components: Record<FieldType, Component> = {
     factory: function MultiEmail({ value, readOnly, label, setValue, ...props }) {
       const placeholder = props.placeholder;
       const { t } = useLocale();
+      const googleContacts = useGoogleContacts();
       value = value || [];
       return (
         <>
@@ -256,35 +273,65 @@ export const Components: Record<FieldType, Component> = {
                 {label}
               </label>
               <ul>
-                {value.map((field, index) => (
-                  <li key={index}>
-                    <EmailField
-                      id={`${props.name}.${index}`}
-                      disabled={readOnly}
-                      value={value[index]}
-                      onChange={(e) => {
-                        value[index] = e.target.value.toLowerCase();
-                        setValue(value);
-                      }}
-                      placeholder={placeholder}
-                      label={<></>}
-                      required
-                      onClickAddon={() => {
-                        value.splice(index, 1);
-                        setValue(value);
-                      }}
-                      addOnSuffix={
-                        !readOnly ? (
-                          <Tooltip content="Remove email">
-                            <button className="m-1" type="button">
-                              <XIcon size={12} className="text-default" />
-                            </button>
-                          </Tooltip>
-                        ) : null
-                      }
-                    />
-                  </li>
-                ))}
+                {value.map((field, index) =>
+                  googleContacts && !readOnly ? (
+                    <li key={index} className="mb-2 flex items-start gap-1">
+                      <div className="flex-1">
+                        <ContactEmailInput
+                          id={`${props.name}.${index}`}
+                          value={value[index]}
+                          onChange={(email) => {
+                            value[index] = email.toLowerCase();
+                            setValue(value);
+                          }}
+                          placeholder={placeholder}
+                          contacts={googleContacts.contacts}
+                          needsGoogleConsent={false}
+                        />
+                      </div>
+                      <Tooltip content="Remove email">
+                        <button
+                          className="mt-2 p-1"
+                          type="button"
+                          aria-label="Remove email"
+                          onClick={() => {
+                            value.splice(index, 1);
+                            setValue(value);
+                          }}>
+                          <XIcon size={12} className="text-default" />
+                        </button>
+                      </Tooltip>
+                    </li>
+                  ) : (
+                    <li key={index}>
+                      <EmailField
+                        id={`${props.name}.${index}`}
+                        disabled={readOnly}
+                        value={value[index]}
+                        onChange={(e) => {
+                          value[index] = e.target.value.toLowerCase();
+                          setValue(value);
+                        }}
+                        placeholder={placeholder}
+                        label={<></>}
+                        required
+                        onClickAddon={() => {
+                          value.splice(index, 1);
+                          setValue(value);
+                        }}
+                        addOnSuffix={
+                          !readOnly ? (
+                            <Tooltip content="Remove email">
+                              <button className="m-1" type="button">
+                                <XIcon size={12} className="text-default" />
+                              </button>
+                            </Tooltip>
+                          ) : null
+                        }
+                      />
+                    </li>
+                  )
+                )}
               </ul>
               {!readOnly && (
                 <Button
