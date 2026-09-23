@@ -4919,5 +4919,10 @@
   "email_preview_no_show_caption": "Sent instead of the follow-up when the attendee is marked as a no-show.",
   "summary_card_title": "Summary (you write it)",
   "email_preview_summary_caption": "Written by you after the call and sent from the summary composer. Sample content shown.",
+  "search_contacts": "Search contacts",
+  "use_typed_email": "Use “{{value}}”",
+  "no_matching_contacts": "No matching contacts",
+  "start_typing_name_or_email": "Start typing a name or email",
+  "connect_google_contacts": "Connect Google contacts for suggestions",
   "ADD_NEW_STRINGS_ABOVE_THIS_LINE_TO_PREVENT_MERGE_CONFLICTS": "↑↑↑↑↑↑↑↑↑↑↑↑↑ Add your new strings above here ↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑↑"
 }
