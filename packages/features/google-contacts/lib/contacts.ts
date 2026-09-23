@@ -27,7 +27,7 @@ export function mapPeopleToContacts(saved: PeoplePerson[], other: PeoplePerson[]
       else if (!existing.name && name) existing.name = name;
     }
   }
-  return [...byEmail.values()].sort((a, b) => {
+  return Array.from(byEmail.values()).sort((a, b) => {
     if (a.name && !b.name) return -1;
     if (!a.name && b.name) return 1;
     return (a.name ?? "").localeCompare(b.name ?? "") || a.email.localeCompare(b.email);
