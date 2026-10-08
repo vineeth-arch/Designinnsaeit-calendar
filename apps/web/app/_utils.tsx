@@ -31,8 +31,7 @@ const _generateMetadataWithoutImage = async (
 
   const title = getTitle(t);
   const description = getDescription(t);
-  const titleSuffix = `| ${APP_NAME}`;
-  const displayedTitle = title.includes(titleSuffix) || hideBranding ? title : `${title} ${titleSuffix}`;
+  const displayedTitle = title;
   const metadataBase = new URL(IS_CALCOM ? getCalcomUrl() : WEBAPP_URL);
 
   return {
@@ -43,7 +42,6 @@ const _generateMetadataWithoutImage = async (
       description: truncateOnWord(description, 158),
       url: canonical,
       type: "website",
-      siteName: APP_NAME,
       title: displayedTitle,
     },
     twitter: {
@@ -100,8 +98,7 @@ export const _generateMetadataForStaticPage = async (
 ) => {
   const _pathname = pathname ?? "";
   const canonical = buildCanonical({ path: _pathname, origin: origin ?? CAL_URL });
-  const titleSuffix = `| ${APP_NAME}`;
-  const displayedTitle = title.includes(titleSuffix) || hideBranding ? title : `${title} ${titleSuffix}`;
+  const displayedTitle = title;
   const metadataBase = new URL(IS_CALCOM ? getCalcomUrl() : WEBAPP_URL);
 
   const metadata = {
@@ -112,7 +109,6 @@ export const _generateMetadataForStaticPage = async (
       description: truncateOnWord(description, 158),
       url: canonical,
       type: "website",
-      siteName: APP_NAME,
       title: displayedTitle,
     },
     twitter: {
