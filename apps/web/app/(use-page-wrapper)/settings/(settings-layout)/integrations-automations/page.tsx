@@ -1,8 +1,4 @@
-import { createRouterCaller } from "app/_trpc/context";
-import { _generateMetadata } from "app/_utils";
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
-
+import process from "node:process";
 import renderEmail from "@calcom/emails/src/renderEmail";
 import { SAMPLE_SUMMARY } from "@calcom/emails/src/ticket-v6/samples";
 import { getServerSession } from "@calcom/features/auth/lib/getServerSession";
@@ -10,9 +6,12 @@ import { getTranslation } from "@calcom/i18n/server";
 import prisma from "@calcom/prisma";
 import { webhookRouter } from "@calcom/trpc/server/routers/viewer/webhook/_router";
 import type { CalendarEvent, Person } from "@calcom/types/Calendar";
-
 import { buildLegacyRequest } from "@lib/buildLegacyCtx";
-
+import { createRouterCaller } from "app/_trpc/context";
+import { _generateMetadata } from "app/_utils";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { getGoogleStatuses } from "~/settings/integrations-automations/googleStatuses";
 import IntegrationsAutomationsView from "~/settings/integrations-automations/integrations-automations-view";
 
 const buildEmailPreviews = async () => {
@@ -60,10 +59,14 @@ const buildEmailPreviews = async () => {
   ]);
 
   return [
-    { title: t("booking_confirmation", {
+    {
+      title: t("booking_confirmation", {
         eventTypeTitle: calEvent.type,
         profileName: calEvent.organizer.name,
-      }), caption: t("email_preview_confirmation_caption"), html: confirmation },
+      }),
+      caption: t("email_preview_confirmation_caption"),
+      html: confirmation,
+    },
     { title: t("new_booking_alert"), caption: t("email_preview_new_booking_caption"), html: newBooking },
     { title: t("reminder_24h_card_title"), caption: t("email_preview_24h_caption"), html: reminder24h },
     { title: t("reminder_1h_card_title"), caption: t("email_preview_1h_caption"), html: reminder1h },
@@ -89,9 +92,12 @@ const Page = async () => {
   }
   const userId = session.user.id;
 
-  const [googleCalendar, googleMeet, webhookData] = await Promise.all([
-    prisma.credential.findFirst({ where: { type: "google_calendar", userId }, select: { id: true } }),
-    prisma.credential.findFirst({ where: { type: "google_video", userId }, select: { id: true } }),
+  const [googleCredentials, webhookData] = await Promise.all([
+    // key holds OAuth tokens: it is only read here to derive statuses and never passed to the client.
+    prisma.credential.findMany({
+      where: { userId, type: { in: ["google_calendar", "google_video"] } },
+      select: { id: true, type: true, invalid: true, key: true },
+    }),
     (async () => {
       const caller = await createRouterCaller(webhookRouter);
       return caller.getByViewer();
@@ -102,12 +108,14 @@ const Page = async () => {
     .flatMap((group) => group.webhooks)
     .map((w) => ({ url: w.subscriberUrl, active: w.active, triggers: w.eventTriggers as string[] }));
 
-  const emailPreviews = await buildEmailPreviews();
+  const [emailPreviews, google] = await Promise.all([
+    buildEmailPreviews(),
+    getGoogleStatuses(googleCredentials),
+  ]);
 
   return (
     <IntegrationsAutomationsView
-      googleCalendarConnected={!!googleCalendar}
-      googleMeetConnected={!!googleMeet}
+      google={google}
       emailConfigured={
         !!process.env.RESEND_API_KEY || !!process.env.EMAIL_SERVER || !!process.env.EMAIL_SERVER_HOST
       }

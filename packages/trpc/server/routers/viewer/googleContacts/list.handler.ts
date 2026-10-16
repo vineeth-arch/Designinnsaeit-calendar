@@ -1,12 +1,9 @@
-import { OAuth2Client } from "googleapis-common";
-import { z } from "zod";
-
-import { getGoogleAppKeys } from "@calcom/app-store/googlecalendar/lib/getGoogleAppKeys";
 import type { GoogleContact, PeoplePerson } from "@calcom/features/google-contacts/lib/contacts";
 import { hasContactsScope, mapPeopleToContacts } from "@calcom/features/google-contacts/lib/contacts";
+import { getGoogleAccessToken } from "@calcom/features/google-contacts/lib/googleStatus";
 import logger from "@calcom/lib/logger";
 import { prisma } from "@calcom/prisma";
-
+import { z } from "zod";
 import type { TrpcSessionUser } from "../../../types";
 
 const log = logger.getSubLogger({ prefix: ["googleContacts.list"] });
@@ -33,7 +30,10 @@ async function fetchAllPages(url: string, listKey: "connections" | "otherContact
     const res = await fetch(pageUrl, { headers: { Authorization: `Bearer ${accessToken}` } });
     if (res.status === 401 || res.status === 403) throw new GoogleAuthError(`People API ${res.status}`);
     if (!res.ok) throw new Error(`People API ${res.status} for ${listKey}`);
-    const body = (await res.json()) as { nextPageToken?: string } & Record<string, PeoplePerson[] | undefined>;
+    const body = (await res.json()) as { nextPageToken?: string } & Record<
+      string,
+      PeoplePerson[] | undefined
+    >;
     people.push(...(body[listKey] ?? []));
     pageToken = body.nextPageToken;
     if (!pageToken) break;
@@ -58,11 +58,7 @@ export const listHandler = async ({
   if (!credential || !credential.key.success) return { contacts: [], needsGoogleConsent: true };
 
   try {
-    const { client_id, client_secret } = await getGoogleAppKeys();
-    const oAuth2Client = new OAuth2Client(client_id, client_secret);
-    oAuth2Client.setCredentials(credential.key.data);
-    // getAccessToken refreshes with the stored refresh_token when the access token is expired.
-    const { token } = await oAuth2Client.getAccessToken();
+    const token = await getGoogleAccessToken(credential.key.data);
     if (!token) return { contacts: [], needsGoogleConsent: true };
 
     const [saved, other] = await Promise.all([

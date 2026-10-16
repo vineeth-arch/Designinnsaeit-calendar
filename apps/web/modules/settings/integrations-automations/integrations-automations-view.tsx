@@ -1,28 +1,35 @@
 "use client";
 
-import { useState } from "react";
-
+import SettingsHeader from "@calcom/features/settings/appDir/SettingsHeader";
 import { useLocale } from "@calcom/lib/hooks/useLocale";
 import classNames from "@calcom/ui/classNames";
 import { Badge } from "@calcom/ui/components/badge";
 import { Button } from "@calcom/ui/components/button";
-import { Icon } from "@calcom/ui/components/icon";
 import type { IconName } from "@calcom/ui/components/icon";
-
-import SettingsHeader from "@calcom/features/settings/appDir/SettingsHeader";
-
+import { Icon } from "@calcom/ui/components/icon";
+import { useState } from "react";
 import type { WebhookSummary } from "./bookingWebhooks";
 import { summarizeBookingWebhooks } from "./bookingWebhooks";
+import type { GoogleStatuses } from "./googleStatuses";
+import type { IntegrationStatus, StatusState } from "./status";
 
 type EmailPreview = { title: string; caption: string; html: string };
 
 type Props = {
-  googleCalendarConnected: boolean;
-  googleMeetConnected: boolean;
+  google: GoogleStatuses;
   emailConfigured: boolean;
   cronConfigured: boolean;
   webhooks: WebhookSummary[];
   emailPreviews: EmailPreview[];
+};
+
+const STATUS_BADGE: Record<
+  StatusState,
+  { variant: "success" | "warning" | "gray"; icon: IconName; labelKey: string }
+> = {
+  ok: { variant: "success", icon: "check", labelKey: "status_working" },
+  warn: { variant: "warning", icon: "triangle-alert", labelKey: "status_needs_attention" },
+  off: { variant: "gray", icon: "x", labelKey: "status_not_set_up" },
 };
 
 type StatusCardProps = {
@@ -32,6 +39,7 @@ type StatusCardProps = {
   connected?: boolean;
   connectedLabel?: string;
   disconnectedLabel?: string;
+  status?: IntegrationStatus;
   manageHref?: string;
   external?: boolean;
   children?: React.ReactNode;
@@ -44,11 +52,13 @@ const StatusCard = ({
   connected,
   connectedLabel,
   disconnectedLabel,
+  status,
   manageHref,
   external,
   children,
 }: StatusCardProps) => {
   const { t } = useLocale();
+  const badge = status ? STATUS_BADGE[status.state] : undefined;
   return (
     <div className="border-subtle bg-default flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-start gap-3">
@@ -58,14 +68,29 @@ const StatusCard = ({
         <div>
           <div className="text-emphasis flex items-center gap-2 text-sm font-semibold">{title}</div>
           <p className="text-subtle mt-0.5 text-sm">{description}</p>
+          {status && <p className="text-subtle mt-1 text-xs">{t(status.reasonKey, status.reasonParams)}</p>}
           {children}
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-3">
-        {connectedLabel && disconnectedLabel && (
+        {badge && (
+          <Badge variant={badge.variant} startIcon={badge.icon}>
+            {t(badge.labelKey)}
+          </Badge>
+        )}
+        {!badge && connectedLabel && disconnectedLabel && (
           <Badge variant={connected ? "success" : "gray"} startIcon={connected ? "check" : "x"}>
             {connected ? connectedLabel : disconnectedLabel}
           </Badge>
+        )}
+        {status?.fixHref && (
+          <Button
+            color="secondary"
+            href={status.fixHref}
+            target={status.fixHref.startsWith("http") ? "_blank" : undefined}
+            EndIcon={status.fixHref.startsWith("http") ? "external-link" : undefined}>
+            {t(status.fixLabelKey ?? "fix")}
+          </Button>
         )}
         {manageHref &&
           (external ? (
@@ -127,93 +152,99 @@ export default function IntegrationsAutomationsView(props: Props) {
       ) : (
         <div className="flex flex-col gap-6">
           <section className="flex flex-col gap-3">
-          <h2 className="text-emphasis text-sm font-semibold uppercase tracking-wide">
-            {t("integrations")}
-          </h2>
-          <StatusCard
-            icon="calendar"
-            title="Google Calendar"
-            description={t("google_calendar_status_description")}
-            connected={props.googleCalendarConnected}
-            connectedLabel={t("connected")}
-            disconnectedLabel={t("not_connected")}
-            manageHref="/apps/installed/calendar"
-          />
-          <StatusCard
-            icon="video"
-            title="Google Meet"
-            description={t("google_meet_status_description")}
-            connected={props.googleMeetConnected}
-            connectedLabel={t("connected")}
-            disconnectedLabel={t("not_connected")}
-            manageHref="/apps/installed/conferencing"
-          />
-          <StatusCard
-            icon="mail"
-            title={t("email_resend_smtp")}
-            description={t("email_transport_description")}
-            connected={props.emailConfigured}
-            connectedLabel={t("configured")}
-            disconnectedLabel={t("not_configured")}
-          />
-        </section>
+            <h2 className="text-emphasis text-sm font-semibold uppercase tracking-wide">
+              {t("integrations")}
+            </h2>
+            <StatusCard
+              icon="calendar"
+              title="Google Calendar"
+              description={t("google_calendar_status_description")}
+              status={props.google.calendar}
+              manageHref="/apps/installed/calendar"
+            />
+            <StatusCard
+              icon="users"
+              title="Google Contacts"
+              description={t("google_contacts_status_description")}
+              status={props.google.contacts}
+            />
+            <StatusCard
+              icon="video"
+              title="Google Meet"
+              description={t("google_meet_status_description")}
+              status={props.google.meet}
+              manageHref="/apps/installed/conferencing"
+            />
+            <StatusCard
+              icon="mail"
+              title={t("email_resend_smtp")}
+              description={t("email_transport_description")}
+              connected={props.emailConfigured}
+              connectedLabel={t("configured")}
+              disconnectedLabel={t("not_configured")}
+            />
+          </section>
 
-        <section className="flex flex-col gap-3">
-          <h2 className="text-emphasis text-sm font-semibold uppercase tracking-wide">{t("automations")}</h2>
-          <StatusCard
-            icon="bell"
-            title={t("new_booking_alert")}
-            description={t("new_booking_alert_description")}
-            connected={true}
-            connectedLabel={t("active_native")}
-            disconnectedLabel={t("not_connected")}
-          />
-          <StatusCard
-            icon="clock"
-            title={t("reminder_24h_card_title")}
-            description={t("reminder_24h_card_description")}
-            connected={props.cronConfigured}
-            connectedLabel={t("active")}
-            disconnectedLabel={t("needs_cron_setup")}
-          />
-          <StatusCard
-            icon="clock"
-            title={t("reminder_1h_card_title")}
-            description={t("reminder_1h_card_description")}
-            connected={props.cronConfigured}
-            connectedLabel={t("active")}
-            disconnectedLabel={t("needs_cron_setup")}
-          />
-          <StatusCard
-            icon="circle-check"
-            title={t("follow_up_card_title")}
-            description={t("follow_up_card_description")}
-            connected={props.cronConfigured}
-            connectedLabel={t("active")}
-            disconnectedLabel={t("needs_cron_setup")}
-          />
-          <StatusCard
-            icon="webhook"
-            title={t("webhook_booking_events")}
-            description={t("webhook_booking_events_description")}
-            connected={bookingWebhooks.length > 0}
-            connectedLabel={t("connected")}
-            disconnectedLabel={t("not_connected")}
-            manageHref="/settings/developer/webhooks">
-            {bookingWebhooks.map((webhook) => (
-              <p key={webhook.host + webhook.triggers.join()} className="text-subtle mt-1 break-all text-xs">
-                {webhook.host} · {webhook.triggers.join(", ")}
-              </p>
-            ))}
-          </StatusCard>
-          <StatusCard
-            icon="sparkles"
-            title="Recall.ai"
-            description={t("recall_ai_description")}
-            manageHref="https://osaaajii.app.n8n.cloud"
-            external
-          />
-        </section>
+          <section className="flex flex-col gap-3">
+            <h2 className="text-emphasis text-sm font-semibold uppercase tracking-wide">
+              {t("automations")}
+            </h2>
+            <StatusCard
+              icon="bell"
+              title={t("new_booking_alert")}
+              description={t("new_booking_alert_description")}
+              connected={true}
+              connectedLabel={t("active_native")}
+              disconnectedLabel={t("not_connected")}
+            />
+            <StatusCard
+              icon="clock"
+              title={t("reminder_24h_card_title")}
+              description={t("reminder_24h_card_description")}
+              connected={props.cronConfigured}
+              connectedLabel={t("active")}
+              disconnectedLabel={t("needs_cron_setup")}
+            />
+            <StatusCard
+              icon="clock"
+              title={t("reminder_1h_card_title")}
+              description={t("reminder_1h_card_description")}
+              connected={props.cronConfigured}
+              connectedLabel={t("active")}
+              disconnectedLabel={t("needs_cron_setup")}
+            />
+            <StatusCard
+              icon="circle-check"
+              title={t("follow_up_card_title")}
+              description={t("follow_up_card_description")}
+              connected={props.cronConfigured}
+              connectedLabel={t("active")}
+              disconnectedLabel={t("needs_cron_setup")}
+            />
+            <StatusCard
+              icon="webhook"
+              title={t("webhook_booking_events")}
+              description={t("webhook_booking_events_description")}
+              connected={bookingWebhooks.length > 0}
+              connectedLabel={t("connected")}
+              disconnectedLabel={t("not_connected")}
+              manageHref="/settings/developer/webhooks">
+              {bookingWebhooks.map((webhook) => (
+                <p
+                  key={webhook.host + webhook.triggers.join()}
+                  className="text-subtle mt-1 break-all text-xs">
+                  {webhook.host} · {webhook.triggers.join(", ")}
+                </p>
+              ))}
+            </StatusCard>
+            <StatusCard
+              icon="sparkles"
+              title="Recall.ai"
+              description={t("recall_ai_description")}
+              manageHref="https://osaaajii.app.n8n.cloud"
+              external
+            />
+          </section>
         </div>
       )}
     </SettingsHeader>
