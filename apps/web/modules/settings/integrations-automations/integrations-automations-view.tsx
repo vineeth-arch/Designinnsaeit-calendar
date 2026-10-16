@@ -13,12 +13,16 @@ import { summarizeBookingWebhooks } from "./bookingWebhooks";
 import type { GoogleStatuses } from "./googleStatuses";
 import type { IntegrationStatus, StatusState } from "./status";
 
+type PingResult = { ok: boolean; status: number; message?: string };
+
 type EmailPreview = { title: string; caption: string; html: string };
 
 type Props = {
   google: GoogleStatuses;
-  emailConfigured: boolean;
+  email?: IntegrationStatus;
+  cron?: IntegrationStatus;
   cronConfigured: boolean;
+  pingWebhook?: (webhookId: string) => Promise<PingResult>;
   webhooks: WebhookSummary[];
   emailPreviews: EmailPreview[];
 };
@@ -107,6 +111,47 @@ const StatusCard = ({
   );
 };
 
+const WebhookTest = ({
+  webhookId,
+  pingWebhook,
+}: {
+  webhookId: string;
+  pingWebhook: (webhookId: string) => Promise<PingResult>;
+}) => {
+  const { t } = useLocale();
+  const [pending, setPending] = useState(false);
+  const [result, setResult] = useState<PingResult | null>(null);
+
+  const runTest = async () => {
+    setPending(true);
+    try {
+      setResult(await pingWebhook(webhookId));
+    } catch {
+      setResult({ ok: false, status: 500 });
+    } finally {
+      setPending(false);
+    }
+  };
+
+  const rejected = result && (result.status === 401 || result.status === 403);
+  return (
+    <div className="mt-1 flex flex-wrap items-center gap-2">
+      <Button size="sm" color="minimal" loading={pending} onClick={runTest}>
+        {t("send_test")}
+      </Button>
+      {result && (
+        <span className={classNames("text-xs", result.ok ? "text-success" : "text-error")}>
+          {result.ok
+            ? t("webhook_test_ok", { status: result.status })
+            : rejected
+              ? t("webhook_test_unauthorized", { status: result.status })
+              : t("webhook_test_failed", { status: result.status })}
+        </span>
+      )}
+    </div>
+  );
+};
+
 export default function IntegrationsAutomationsView(props: Props) {
   const { t } = useLocale();
   const bookingWebhooks = summarizeBookingWebhooks(props.webhooks);
@@ -175,15 +220,27 @@ export default function IntegrationsAutomationsView(props: Props) {
               status={props.google.meet}
               manageHref="/apps/installed/conferencing"
             />
-            <StatusCard
-              icon="mail"
-              title={t("email_resend_smtp")}
-              description={t("email_transport_description")}
-              connected={props.emailConfigured}
-              connectedLabel={t("configured")}
-              disconnectedLabel={t("not_configured")}
-            />
           </section>
+
+          {props.email && props.cron && (
+            <section className="flex flex-col gap-3">
+              <h2 className="text-emphasis text-sm font-semibold uppercase tracking-wide">
+                {t("server_services")}
+              </h2>
+              <StatusCard
+                icon="mail"
+                title={t("email_resend_smtp")}
+                description={t("email_transport_description")}
+                status={props.email}
+              />
+              <StatusCard
+                icon="clock"
+                title={t("cron_scheduler")}
+                description={t("cron_scheduler_description")}
+                status={props.cron}
+              />
+            </section>
+          )}
 
           <section className="flex flex-col gap-3">
             <h2 className="text-emphasis text-sm font-semibold uppercase tracking-wide">
@@ -201,7 +258,7 @@ export default function IntegrationsAutomationsView(props: Props) {
               icon="clock"
               title={t("reminder_24h_card_title")}
               description={t("reminder_24h_card_description")}
-              connected={props.cronConfigured}
+              connected={props.cron ? props.cron.state === "ok" : props.cronConfigured}
               connectedLabel={t("active")}
               disconnectedLabel={t("needs_cron_setup")}
             />
@@ -209,7 +266,7 @@ export default function IntegrationsAutomationsView(props: Props) {
               icon="clock"
               title={t("reminder_1h_card_title")}
               description={t("reminder_1h_card_description")}
-              connected={props.cronConfigured}
+              connected={props.cron ? props.cron.state === "ok" : props.cronConfigured}
               connectedLabel={t("active")}
               disconnectedLabel={t("needs_cron_setup")}
             />
@@ -217,7 +274,7 @@ export default function IntegrationsAutomationsView(props: Props) {
               icon="circle-check"
               title={t("follow_up_card_title")}
               description={t("follow_up_card_description")}
-              connected={props.cronConfigured}
+              connected={props.cron ? props.cron.state === "ok" : props.cronConfigured}
               connectedLabel={t("active")}
               disconnectedLabel={t("needs_cron_setup")}
             />
@@ -230,17 +287,21 @@ export default function IntegrationsAutomationsView(props: Props) {
               disconnectedLabel={t("not_connected")}
               manageHref="/settings/developer/webhooks">
               {bookingWebhooks.map((webhook) => (
-                <p
-                  key={webhook.host + webhook.triggers.join()}
-                  className="text-subtle mt-1 break-all text-xs">
-                  {webhook.host} · {webhook.triggers.join(", ")}
-                </p>
+                <div key={webhook.id}>
+                  <p className="text-subtle mt-1 break-all text-xs">
+                    {webhook.host} · {webhook.triggers.join(", ")}
+                  </p>
+                  {props.pingWebhook && (
+                    <WebhookTest webhookId={webhook.id} pingWebhook={props.pingWebhook} />
+                  )}
+                </div>
               ))}
             </StatusCard>
             <StatusCard
               icon="sparkles"
               title="Recall.ai"
               description={t("recall_ai_description")}
+              status={{ state: "off", reasonKey: "status_recall_external" }}
               manageHref="https://osaaajii.app.n8n.cloud"
               external
             />

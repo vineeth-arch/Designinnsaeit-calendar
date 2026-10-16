@@ -13,6 +13,8 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getGoogleStatuses } from "~/settings/integrations-automations/googleStatuses";
 import IntegrationsAutomationsView from "~/settings/integrations-automations/integrations-automations-view";
+import { getCronStatus, getEmailStatus } from "~/settings/integrations-automations/serverStatuses";
+import { pingWebhook } from "./actions";
 
 const buildEmailPreviews = async () => {
   const t = await getTranslation("en", "common");
@@ -91,6 +93,7 @@ const Page = async () => {
     redirect("/auth/login");
   }
   const userId = session.user.id;
+  const isAdmin = session.user.role === "ADMIN";
 
   const [googleCredentials, webhookData] = await Promise.all([
     // key holds OAuth tokens: it is only read here to derive statuses and never passed to the client.
@@ -106,19 +109,26 @@ const Page = async () => {
 
   const webhooks = webhookData.webhookGroups
     .flatMap((group) => group.webhooks)
-    .map((w) => ({ url: w.subscriberUrl, active: w.active, triggers: w.eventTriggers as string[] }));
+    .map((w) => ({
+      id: w.id,
+      url: w.subscriberUrl,
+      active: w.active,
+      triggers: w.eventTriggers as string[],
+    }));
 
-  const [emailPreviews, google] = await Promise.all([
+  const [emailPreviews, google, email, cron] = await Promise.all([
     buildEmailPreviews(),
     getGoogleStatuses(googleCredentials),
+    isAdmin ? getEmailStatus() : undefined,
+    isAdmin ? getCronStatus() : undefined,
   ]);
 
   return (
     <IntegrationsAutomationsView
       google={google}
-      emailConfigured={
-        !!process.env.RESEND_API_KEY || !!process.env.EMAIL_SERVER || !!process.env.EMAIL_SERVER_HOST
-      }
+      email={email}
+      cron={cron}
+      pingWebhook={isAdmin ? pingWebhook : undefined}
       cronConfigured={!!process.env.CRON_API_KEY}
       webhooks={webhooks}
       emailPreviews={emailPreviews}

@@ -41,6 +41,15 @@ async function runRoutes(env, routes) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (request.method === "GET" && url.pathname === "/status") {
+      // Timestamps only, so it is safe without a token; the app's settings page reads it.
+      const [lastBeat, failoverSince, deployedAt] = await Promise.all(
+        ["last_beat", "failover_since", "deployed_at"].map(
+          async (key) => Number(await env.STATE.get(key)) || null
+        )
+      );
+      return Response.json({ lastBeat, failoverSince, deployedAt });
+    }
     if (request.method !== "GET" || url.pathname !== "/heartbeat") {
       return new Response("Not found", { status: 404 });
     }
@@ -62,7 +71,12 @@ export default {
       console.log(`cron watchdog misconfigured: missing ${missing.join(", ")}`);
       if (!(await env.STATE.get("misconfig_alerted"))) {
         await env.STATE.put("misconfig_alerted", String(now), { expirationTtl: 86_400 });
-        ctx.waitUntil(alert(env, `cal.diy cron watchdog is missing secret(s): ${missing.join(", ")}. Failover cannot work until they are set.`));
+        ctx.waitUntil(
+          alert(
+            env,
+            `cal.diy cron watchdog is missing secret(s): ${missing.join(", ")}. Failover cannot work until they are set.`
+          )
+        );
       }
       return;
     }
@@ -88,7 +102,9 @@ export default {
 
     if (!failoverSince) {
       await env.STATE.put("failover_since", String(now));
-      ctx.waitUntil(alert(env, "cal.diy cron watchdog: no heartbeat from cron-job.org, Worker is running the crons."));
+      ctx.waitUntil(
+        alert(env, "cal.diy cron watchdog: no heartbeat from cron-job.org, Worker is running the crons.")
+      );
     }
     ctx.waitUntil(runRoutes(env, dueRoutes(new Date(now))));
   },

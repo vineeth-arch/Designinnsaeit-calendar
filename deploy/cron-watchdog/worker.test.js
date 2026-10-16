@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
-
 import worker from "./worker.js";
 
 const MIN = 60_000;
@@ -47,6 +46,19 @@ test("heartbeat with the right token records a beat", async () => {
   const res = await worker.fetch(new Request("https://w.example/heartbeat?token=beat-token"), env());
   assert.equal(res.status, 204);
   assert.ok(store.has("last_beat"));
+});
+
+test("status reports stored timestamps and nothing secret", async () => {
+  store.set("last_beat", String(NOW));
+  store.set("failover_since", String(NOW - MIN));
+  const res = await worker.fetch(new Request("https://w.example/status"), env());
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), { lastBeat: NOW, failoverSince: NOW - MIN, deployedAt: null });
+});
+
+test("status is null for timestamps that were never stored", async () => {
+  const res = await worker.fetch(new Request("https://w.example/status"), env());
+  assert.deepEqual(await res.json(), { lastBeat: null, failoverSince: null, deployedAt: null });
 });
 
 test("any other path is 404", async () => {
