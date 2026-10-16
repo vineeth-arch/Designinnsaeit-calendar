@@ -224,6 +224,7 @@ export const Components: Record<FieldType, Component> = {
             onChange={(email) => props.setValue(email)}
             placeholder={props.placeholder}
             disabled={props.readOnly}
+            required={props.required}
             contacts={googleContacts.contacts}
             needsGoogleConsent={googleContacts.needsGoogleConsent}
           />
