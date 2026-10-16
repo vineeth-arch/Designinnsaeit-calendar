@@ -8,7 +8,7 @@ crons = ["* * * * *"]
 # Create with: npx wrangler kv namespace create STATE, then paste the id here (the id is not secret).
 [[kv_namespaces]]
 binding = "STATE"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "4286287ceef8454bb513cec255970ab1"
 
 [vars]
 APP_URL = "https://appointments.designinnsaeit.com"
