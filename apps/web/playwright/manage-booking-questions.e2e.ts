@@ -846,7 +846,7 @@ test.describe("Text area min and max characters text", () => {
       // Expect the text: Max. 5 characters to be hidden
       await expect(page.locator(`text=Min. 5 characters required`)).toBeHidden();
 
-      await expect(page.locator('text="This meeting is scheduled"')).toBeVisible();
+      await expect(page.locator("#modal-headline")).toHaveText("Invite emailed to everyone");
     });
   });
 });

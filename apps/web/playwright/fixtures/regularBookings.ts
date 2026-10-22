@@ -6,7 +6,7 @@ import { localize } from "../lib/localize";
 import { submitAndWaitForResponse } from "../lib/testUtils";
 import type { createUsersFixture } from "./users";
 
-export const scheduleSuccessfullyText = "This meeting is scheduled";
+export const scheduleSuccessfullyText = "Invite emailed to everyone";
 
 type UserFixture = ReturnType<typeof createUsersFixture>;
 
