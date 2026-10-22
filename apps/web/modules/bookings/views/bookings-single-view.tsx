@@ -20,7 +20,7 @@ import { ThemeToggle } from "@calcom/features/components/ThemeToggle";
 import type { nameObjectSchema } from "@calcom/features/eventtypes/lib/eventNaming";
 import { getEventName } from "@calcom/features/eventtypes/lib/eventNaming";
 import { shouldShowFieldInCustomResponses } from "@calcom/lib/bookings/SystemField";
-import { APP_NAME } from "@calcom/lib/constants";
+import { APP_NAME, WEBAPP_URL } from "@calcom/lib/constants";
 import { formatToLocalizedDate, formatToLocalizedTime, formatToLocalizedTimezone } from "@calcom/lib/dayjs";
 import useGetBrandingColours from "@calcom/lib/getBrandColours";
 import { useCompatSearchParams } from "@calcom/lib/hooks/useCompatSearchParams";
@@ -402,8 +402,9 @@ export default function Success(props: PageProps) {
     locationVideoCallUrl || (locationToDisplay?.startsWith("http") ? locationToDisplay : null);
   const whatsappShareMessage = [
     eventName,
-    `${date.format("dddd, MMM D")} · ${date.format(is24h ? "HH:mm" : "h:mma")} (${tz})`,
+    `${date.format("dddd, MMM D, YYYY")} · ${date.format(is24h ? "HH:mm" : "h:mma")} (${tz})`,
     shareableMeetingUrl ? `Join: ${shareableMeetingUrl}` : null,
+    `Booking confirmed: ${WEBAPP_URL}/booking/${bookingInfo.uid}`,
   ]
     .filter(Boolean)
     .join("\n");
