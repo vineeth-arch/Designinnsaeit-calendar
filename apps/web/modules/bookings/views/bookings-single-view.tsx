@@ -763,7 +763,7 @@ export default function Success(props: PageProps) {
                                 href={ticketJoinUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex w-full max-w-[18rem] items-center justify-center rounded-lg bg-[#280A86] px-5 py-3 text-sm font-bold text-white transition-opacity dark:ring-1 dark:ring-white/60 [@media(hover:hover)]:hover:opacity-90">
+                                className="inline-flex w-full max-w-[18rem] items-center justify-center rounded-lg bg-[#280A86] dark:bg-[#5B3DF0] px-5 py-3 text-sm font-bold text-white transition-opacity dark:ring-1 dark:ring-white/70 [@media(hover:hover)]:hover:opacity-90">
                                 <Icon name="video" className="mr-2 h-4 w-4" />
                                 {isGoogleMeet ? t("join_meeting_on_google_meet") : t("join_meeting")}
                               </a>
